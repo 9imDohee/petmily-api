@@ -67,6 +67,24 @@
       "relation": "manyToOne",
       "target": "plugin::users-permissions.user",
       "inversedBy": "pets"
+    },
+    "journal": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "api::journal.journal",
+      "inversedBy": "pets"
+    },
+    "review": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "api::review.review",
+      "inversedBy": "pets"
+    },
+    "reservation": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "api::reservation.reservation",
+      "inversedBy": "pets"
     }
   }
 }

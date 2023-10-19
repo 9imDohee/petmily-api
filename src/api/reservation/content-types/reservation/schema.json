@@ -1,0 +1,56 @@
+{
+  "kind": "collectionType",
+  "collectionName": "reservations",
+  "info": {
+    "singularName": "reservation",
+    "pluralName": "reservations",
+    "displayName": "Reservation"
+  },
+  "options": {
+    "draftAndPublish": true
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "reservationDay": {
+      "type": "date",
+      "required": true
+    },
+    "reservationTimeStart": {
+      "type": "time",
+      "required": true
+    },
+    "reservationTimeEnd": {
+      "type": "time",
+      "required": true
+    },
+    "address": {
+      "type": "string"
+    },
+    "phone": {
+      "type": "biginteger",
+      "required": true
+    },
+    "progress": {
+      "type": "enumeration",
+      "enum": [
+        "RESERVATION_REQUEST",
+        "RESERVATION_CONFIRMED",
+        "RESERVATION_CANCELLED",
+        "FINISH_CARING"
+      ],
+      "required": true
+    },
+    "pets": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "api::pet.pet",
+      "mappedBy": "reservation"
+    },
+    "journal": {
+      "type": "relation",
+      "relation": "oneToOne",
+      "target": "api::journal.journal",
+      "inversedBy": "reservation"
+    }
+  }
+}

@@ -18,7 +18,9 @@ module.exports = createCoreController("api::pet.pet", ({ strapi }) => ({
   },
   async findOne(ctx) {
     try {
-      console.log(ctx.params);
+      if (!ctx.state.user) {
+        return ctx.unauthorized();
+      }
 
       // const pet = await strapi.service("api::pet.pet").find(ctx.params.id);
       const pet = await strapi.entityService.findOne(

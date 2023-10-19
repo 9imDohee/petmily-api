@@ -362,124 +362,6 @@ export interface AdminTransferTokenPermission extends Schema.CollectionType {
   };
 }
 
-export interface ApiCategoryCategory extends Schema.CollectionType {
-  collectionName: 'categories';
-  info: {
-    singularName: 'category';
-    pluralName: 'categories';
-    displayName: 'Category';
-  };
-  options: {
-    draftAndPublish: true;
-  };
-  attributes: {
-    Name: Attribute.String & Attribute.Required & Attribute.Unique;
-    restaurants: Attribute.Relation<
-      'api::category.category',
-      'manyToMany',
-      'api::restaurant.restaurant'
-    >;
-    createdAt: Attribute.DateTime;
-    updatedAt: Attribute.DateTime;
-    publishedAt: Attribute.DateTime;
-    createdBy: Attribute.Relation<
-      'api::category.category',
-      'oneToOne',
-      'admin::user'
-    > &
-      Attribute.Private;
-    updatedBy: Attribute.Relation<
-      'api::category.category',
-      'oneToOne',
-      'admin::user'
-    > &
-      Attribute.Private;
-  };
-}
-
-export interface ApiPetPet extends Schema.CollectionType {
-  collectionName: 'pets';
-  info: {
-    singularName: 'pet';
-    pluralName: 'pets';
-    displayName: 'Pet';
-    description: '';
-  };
-  options: {
-    draftAndPublish: true;
-  };
-  attributes: {
-    type: Attribute.Enumeration<['CAT', 'DOG']> & Attribute.Required;
-    name: Attribute.String & Attribute.Required;
-    age: Attribute.Integer &
-      Attribute.Required &
-      Attribute.SetMinMax<{
-        max: 40;
-      }>;
-    species: Attribute.String & Attribute.Required;
-    weight: Attribute.Decimal &
-      Attribute.Required &
-      Attribute.SetMinMax<{
-        max: 100;
-      }>;
-    body: Attribute.Text &
-      Attribute.SetMinMaxLength<{
-        maxLength: 255;
-      }>;
-    male: Attribute.Boolean & Attribute.Required;
-    neutering: Attribute.Boolean & Attribute.Required;
-    file: Attribute.Media;
-    user: Attribute.Relation<
-      'api::pet.pet',
-      'manyToOne',
-      'plugin::users-permissions.user'
-    >;
-    createdAt: Attribute.DateTime;
-    updatedAt: Attribute.DateTime;
-    publishedAt: Attribute.DateTime;
-    createdBy: Attribute.Relation<'api::pet.pet', 'oneToOne', 'admin::user'> &
-      Attribute.Private;
-    updatedBy: Attribute.Relation<'api::pet.pet', 'oneToOne', 'admin::user'> &
-      Attribute.Private;
-  };
-}
-
-export interface ApiRestaurantRestaurant extends Schema.CollectionType {
-  collectionName: 'restaurants';
-  info: {
-    singularName: 'restaurant';
-    pluralName: 'restaurants';
-    displayName: 'Restaurant';
-  };
-  options: {
-    draftAndPublish: true;
-  };
-  attributes: {
-    Name: Attribute.String & Attribute.Required & Attribute.Unique;
-    Description: Attribute.RichText;
-    categories: Attribute.Relation<
-      'api::restaurant.restaurant',
-      'manyToMany',
-      'api::category.category'
-    >;
-    createdAt: Attribute.DateTime;
-    updatedAt: Attribute.DateTime;
-    publishedAt: Attribute.DateTime;
-    createdBy: Attribute.Relation<
-      'api::restaurant.restaurant',
-      'oneToOne',
-      'admin::user'
-    > &
-      Attribute.Private;
-    updatedBy: Attribute.Relation<
-      'api::restaurant.restaurant',
-      'oneToOne',
-      'admin::user'
-    > &
-      Attribute.Private;
-  };
-}
-
 export interface PluginUploadFile extends Schema.CollectionType {
   collectionName: 'files';
   info: {
@@ -785,6 +667,16 @@ export interface PluginUsersPermissionsUser extends Schema.CollectionType {
       'oneToMany',
       'api::pet.pet'
     >;
+    journals: Attribute.Relation<
+      'plugin::users-permissions.user',
+      'oneToMany',
+      'api::journal.journal'
+    >;
+    reviews: Attribute.Relation<
+      'plugin::users-permissions.user',
+      'oneToMany',
+      'api::review.review'
+    >;
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;
     createdBy: Attribute.Relation<
@@ -802,6 +694,284 @@ export interface PluginUsersPermissionsUser extends Schema.CollectionType {
   };
 }
 
+export interface ApiCategoryCategory extends Schema.CollectionType {
+  collectionName: 'categories';
+  info: {
+    singularName: 'category';
+    pluralName: 'categories';
+    displayName: 'Category';
+  };
+  options: {
+    draftAndPublish: true;
+  };
+  attributes: {
+    Name: Attribute.String & Attribute.Required & Attribute.Unique;
+    restaurants: Attribute.Relation<
+      'api::category.category',
+      'manyToMany',
+      'api::restaurant.restaurant'
+    >;
+    createdAt: Attribute.DateTime;
+    updatedAt: Attribute.DateTime;
+    publishedAt: Attribute.DateTime;
+    createdBy: Attribute.Relation<
+      'api::category.category',
+      'oneToOne',
+      'admin::user'
+    > &
+      Attribute.Private;
+    updatedBy: Attribute.Relation<
+      'api::category.category',
+      'oneToOne',
+      'admin::user'
+    > &
+      Attribute.Private;
+  };
+}
+
+export interface ApiJournalJournal extends Schema.CollectionType {
+  collectionName: 'journals';
+  info: {
+    singularName: 'journal';
+    pluralName: 'journals';
+    displayName: 'Journal';
+    description: '';
+  };
+  options: {
+    draftAndPublish: true;
+  };
+  attributes: {
+    user: Attribute.Relation<
+      'api::journal.journal',
+      'manyToOne',
+      'plugin::users-permissions.user'
+    >;
+    body: Attribute.Text &
+      Attribute.SetMinMaxLength<{
+        maxLength: 255;
+      }>;
+    photos: Attribute.Media;
+    pets: Attribute.Relation<
+      'api::journal.journal',
+      'oneToMany',
+      'api::pet.pet'
+    >;
+    reservation: Attribute.Relation<
+      'api::journal.journal',
+      'oneToOne',
+      'api::reservation.reservation'
+    >;
+    createdAt: Attribute.DateTime;
+    updatedAt: Attribute.DateTime;
+    publishedAt: Attribute.DateTime;
+    createdBy: Attribute.Relation<
+      'api::journal.journal',
+      'oneToOne',
+      'admin::user'
+    > &
+      Attribute.Private;
+    updatedBy: Attribute.Relation<
+      'api::journal.journal',
+      'oneToOne',
+      'admin::user'
+    > &
+      Attribute.Private;
+  };
+}
+
+export interface ApiPetPet extends Schema.CollectionType {
+  collectionName: 'pets';
+  info: {
+    singularName: 'pet';
+    pluralName: 'pets';
+    displayName: 'Pet';
+    description: '';
+  };
+  options: {
+    draftAndPublish: true;
+  };
+  attributes: {
+    type: Attribute.Enumeration<['CAT', 'DOG']> & Attribute.Required;
+    name: Attribute.String & Attribute.Required;
+    age: Attribute.Integer &
+      Attribute.Required &
+      Attribute.SetMinMax<{
+        max: 40;
+      }>;
+    species: Attribute.String & Attribute.Required;
+    weight: Attribute.Decimal &
+      Attribute.Required &
+      Attribute.SetMinMax<{
+        max: 100;
+      }>;
+    body: Attribute.Text &
+      Attribute.SetMinMaxLength<{
+        maxLength: 255;
+      }>;
+    male: Attribute.Boolean & Attribute.Required;
+    neutering: Attribute.Boolean & Attribute.Required;
+    file: Attribute.Media;
+    user: Attribute.Relation<
+      'api::pet.pet',
+      'manyToOne',
+      'plugin::users-permissions.user'
+    >;
+    journal: Attribute.Relation<
+      'api::pet.pet',
+      'manyToOne',
+      'api::journal.journal'
+    >;
+    review: Attribute.Relation<
+      'api::pet.pet',
+      'manyToOne',
+      'api::review.review'
+    >;
+    reservation: Attribute.Relation<
+      'api::pet.pet',
+      'manyToOne',
+      'api::reservation.reservation'
+    >;
+    createdAt: Attribute.DateTime;
+    updatedAt: Attribute.DateTime;
+    publishedAt: Attribute.DateTime;
+    createdBy: Attribute.Relation<'api::pet.pet', 'oneToOne', 'admin::user'> &
+      Attribute.Private;
+    updatedBy: Attribute.Relation<'api::pet.pet', 'oneToOne', 'admin::user'> &
+      Attribute.Private;
+  };
+}
+
+export interface ApiReservationReservation extends Schema.CollectionType {
+  collectionName: 'reservations';
+  info: {
+    singularName: 'reservation';
+    pluralName: 'reservations';
+    displayName: 'Reservation';
+  };
+  options: {
+    draftAndPublish: true;
+  };
+  attributes: {
+    reservationDay: Attribute.Date & Attribute.Required;
+    reservationTimeStart: Attribute.Time & Attribute.Required;
+    reservationTimeEnd: Attribute.Time & Attribute.Required;
+    address: Attribute.String;
+    phone: Attribute.BigInteger & Attribute.Required;
+    progress: Attribute.Enumeration<
+      [
+        'RESERVATION_REQUEST',
+        'RESERVATION_CONFIRMED',
+        'RESERVATION_CANCELLED',
+        'FINISH_CARING'
+      ]
+    > &
+      Attribute.Required;
+    pets: Attribute.Relation<
+      'api::reservation.reservation',
+      'oneToMany',
+      'api::pet.pet'
+    >;
+    journal: Attribute.Relation<
+      'api::reservation.reservation',
+      'oneToOne',
+      'api::journal.journal'
+    >;
+    createdAt: Attribute.DateTime;
+    updatedAt: Attribute.DateTime;
+    publishedAt: Attribute.DateTime;
+    createdBy: Attribute.Relation<
+      'api::reservation.reservation',
+      'oneToOne',
+      'admin::user'
+    > &
+      Attribute.Private;
+    updatedBy: Attribute.Relation<
+      'api::reservation.reservation',
+      'oneToOne',
+      'admin::user'
+    > &
+      Attribute.Private;
+  };
+}
+
+export interface ApiRestaurantRestaurant extends Schema.CollectionType {
+  collectionName: 'restaurants';
+  info: {
+    singularName: 'restaurant';
+    pluralName: 'restaurants';
+    displayName: 'Restaurant';
+  };
+  options: {
+    draftAndPublish: true;
+  };
+  attributes: {
+    Name: Attribute.String & Attribute.Required & Attribute.Unique;
+    Description: Attribute.RichText;
+    categories: Attribute.Relation<
+      'api::restaurant.restaurant',
+      'manyToMany',
+      'api::category.category'
+    >;
+    createdAt: Attribute.DateTime;
+    updatedAt: Attribute.DateTime;
+    publishedAt: Attribute.DateTime;
+    createdBy: Attribute.Relation<
+      'api::restaurant.restaurant',
+      'oneToOne',
+      'admin::user'
+    > &
+      Attribute.Private;
+    updatedBy: Attribute.Relation<
+      'api::restaurant.restaurant',
+      'oneToOne',
+      'admin::user'
+    > &
+      Attribute.Private;
+  };
+}
+
+export interface ApiReviewReview extends Schema.CollectionType {
+  collectionName: 'reviews';
+  info: {
+    singularName: 'review';
+    pluralName: 'reviews';
+    displayName: 'Review';
+  };
+  options: {
+    draftAndPublish: true;
+  };
+  attributes: {
+    user: Attribute.Relation<
+      'api::review.review',
+      'manyToOne',
+      'plugin::users-permissions.user'
+    >;
+    pets: Attribute.Relation<'api::review.review', 'oneToMany', 'api::pet.pet'>;
+    body: Attribute.Text;
+    reviewPhotos: Attribute.Media;
+    star: Attribute.Integer &
+      Attribute.SetMinMax<{
+        min: 0;
+        max: 5;
+      }>;
+    createdAt: Attribute.DateTime;
+    updatedAt: Attribute.DateTime;
+    publishedAt: Attribute.DateTime;
+    createdBy: Attribute.Relation<
+      'api::review.review',
+      'oneToOne',
+      'admin::user'
+    > &
+      Attribute.Private;
+    updatedBy: Attribute.Relation<
+      'api::review.review',
+      'oneToOne',
+      'admin::user'
+    > &
+      Attribute.Private;
+  };
+}
+
 declare module '@strapi/types' {
   export module Shared {
     export interface ContentTypes {
@@ -812,15 +982,18 @@ declare module '@strapi/types' {
       'admin::api-token-permission': AdminApiTokenPermission;
       'admin::transfer-token': AdminTransferToken;
       'admin::transfer-token-permission': AdminTransferTokenPermission;
-      'api::category.category': ApiCategoryCategory;
-      'api::pet.pet': ApiPetPet;
-      'api::restaurant.restaurant': ApiRestaurantRestaurant;
       'plugin::upload.file': PluginUploadFile;
       'plugin::upload.folder': PluginUploadFolder;
       'plugin::i18n.locale': PluginI18NLocale;
       'plugin::users-permissions.permission': PluginUsersPermissionsPermission;
       'plugin::users-permissions.role': PluginUsersPermissionsRole;
       'plugin::users-permissions.user': PluginUsersPermissionsUser;
+      'api::category.category': ApiCategoryCategory;
+      'api::journal.journal': ApiJournalJournal;
+      'api::pet.pet': ApiPetPet;
+      'api::reservation.reservation': ApiReservationReservation;
+      'api::restaurant.restaurant': ApiRestaurantRestaurant;
+      'api::review.review': ApiReviewReview;
     }
   }
 }
