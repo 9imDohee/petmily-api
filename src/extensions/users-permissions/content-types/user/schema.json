@@ -76,6 +76,12 @@
     "address": {
       "type": "text",
       "required": true
+    },
+    "pets": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "api::pet.pet",
+      "mappedBy": "user"
     }
   }
 }

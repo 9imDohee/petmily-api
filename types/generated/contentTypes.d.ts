@@ -397,6 +397,53 @@ export interface ApiCategoryCategory extends Schema.CollectionType {
   };
 }
 
+export interface ApiPetPet extends Schema.CollectionType {
+  collectionName: 'pets';
+  info: {
+    singularName: 'pet';
+    pluralName: 'pets';
+    displayName: 'Pet';
+    description: '';
+  };
+  options: {
+    draftAndPublish: true;
+  };
+  attributes: {
+    type: Attribute.Enumeration<['CAT', 'DOG']> & Attribute.Required;
+    name: Attribute.String & Attribute.Required;
+    age: Attribute.Integer &
+      Attribute.Required &
+      Attribute.SetMinMax<{
+        max: 40;
+      }>;
+    species: Attribute.String & Attribute.Required;
+    weight: Attribute.Decimal &
+      Attribute.Required &
+      Attribute.SetMinMax<{
+        max: 100;
+      }>;
+    body: Attribute.Text &
+      Attribute.SetMinMaxLength<{
+        maxLength: 255;
+      }>;
+    male: Attribute.Boolean & Attribute.Required;
+    neutering: Attribute.Boolean & Attribute.Required;
+    file: Attribute.Media;
+    user: Attribute.Relation<
+      'api::pet.pet',
+      'manyToOne',
+      'plugin::users-permissions.user'
+    >;
+    createdAt: Attribute.DateTime;
+    updatedAt: Attribute.DateTime;
+    publishedAt: Attribute.DateTime;
+    createdBy: Attribute.Relation<'api::pet.pet', 'oneToOne', 'admin::user'> &
+      Attribute.Private;
+    updatedBy: Attribute.Relation<'api::pet.pet', 'oneToOne', 'admin::user'> &
+      Attribute.Private;
+  };
+}
+
 export interface ApiRestaurantRestaurant extends Schema.CollectionType {
   collectionName: 'restaurants';
   info: {
@@ -733,6 +780,11 @@ export interface PluginUsersPermissionsUser extends Schema.CollectionType {
     nickName: Attribute.String & Attribute.Required;
     phone: Attribute.BigInteger & Attribute.Required;
     address: Attribute.Text & Attribute.Required;
+    pets: Attribute.Relation<
+      'plugin::users-permissions.user',
+      'oneToMany',
+      'api::pet.pet'
+    >;
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;
     createdBy: Attribute.Relation<
@@ -761,6 +813,7 @@ declare module '@strapi/types' {
       'admin::transfer-token': AdminTransferToken;
       'admin::transfer-token-permission': AdminTransferTokenPermission;
       'api::category.category': ApiCategoryCategory;
+      'api::pet.pet': ApiPetPet;
       'api::restaurant.restaurant': ApiRestaurantRestaurant;
       'plugin::upload.file': PluginUploadFile;
       'plugin::upload.folder': PluginUploadFolder;
