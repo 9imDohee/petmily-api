@@ -667,15 +667,15 @@ export interface PluginUsersPermissionsUser extends Schema.CollectionType {
       'oneToMany',
       'api::pet.pet'
     >;
-    journals: Attribute.Relation<
-      'plugin::users-permissions.user',
-      'oneToMany',
-      'api::journal.journal'
-    >;
     reviews: Attribute.Relation<
       'plugin::users-permissions.user',
       'oneToMany',
       'api::review.review'
+    >;
+    reservations: Attribute.Relation<
+      'plugin::users-permissions.user',
+      'oneToMany',
+      'api::reservation.reservation'
     >;
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;
@@ -741,21 +741,11 @@ export interface ApiJournalJournal extends Schema.CollectionType {
     draftAndPublish: true;
   };
   attributes: {
-    user: Attribute.Relation<
-      'api::journal.journal',
-      'manyToOne',
-      'plugin::users-permissions.user'
-    >;
     body: Attribute.Text &
       Attribute.SetMinMaxLength<{
         maxLength: 255;
       }>;
     photos: Attribute.Media;
-    pets: Attribute.Relation<
-      'api::journal.journal',
-      'oneToMany',
-      'api::pet.pet'
-    >;
     reservation: Attribute.Relation<
       'api::journal.journal',
       'oneToOne',
@@ -816,11 +806,6 @@ export interface ApiPetPet extends Schema.CollectionType {
       'manyToOne',
       'plugin::users-permissions.user'
     >;
-    journal: Attribute.Relation<
-      'api::pet.pet',
-      'manyToOne',
-      'api::journal.journal'
-    >;
     review: Attribute.Relation<
       'api::pet.pet',
       'manyToOne',
@@ -847,6 +832,7 @@ export interface ApiReservationReservation extends Schema.CollectionType {
     singularName: 'reservation';
     pluralName: 'reservations';
     displayName: 'Reservation';
+    description: '';
   };
   options: {
     draftAndPublish: true;
@@ -875,6 +861,11 @@ export interface ApiReservationReservation extends Schema.CollectionType {
       'api::reservation.reservation',
       'oneToOne',
       'api::journal.journal'
+    >;
+    user: Attribute.Relation<
+      'api::reservation.reservation',
+      'manyToOne',
+      'plugin::users-permissions.user'
     >;
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;
