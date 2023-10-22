@@ -83,16 +83,16 @@
       "target": "api::pet.pet",
       "mappedBy": "user"
     },
-    "journals": {
-      "type": "relation",
-      "relation": "oneToMany",
-      "target": "api::journal.journal",
-      "mappedBy": "user"
-    },
     "reviews": {
       "type": "relation",
       "relation": "oneToMany",
       "target": "api::review.review",
+      "mappedBy": "user"
+    },
+    "reservations": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "api::reservation.reservation",
       "mappedBy": "user"
     }
   }
