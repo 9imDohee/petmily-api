@@ -19,12 +19,7 @@
       "type": "media",
       "multiple": true,
       "required": false,
-      "allowedTypes": [
-        "images",
-        "files",
-        "videos",
-        "audios"
-      ]
+      "allowedTypes": ["images", "files", "videos", "audios"]
     },
     "star": {
       "type": "integer",
@@ -36,6 +31,12 @@
       "relation": "oneToOne",
       "target": "api::reservation.reservation",
       "inversedBy": "review"
+    },
+    "pets": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "api::pet.pet",
+      "mappedBy": "review"
     }
   }
 }
