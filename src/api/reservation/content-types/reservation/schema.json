@@ -27,10 +27,6 @@
     "address": {
       "type": "string"
     },
-    "phone": {
-      "type": "biginteger",
-      "required": true
-    },
     "progress": {
       "type": "enumeration",
       "enum": [
@@ -40,12 +36,6 @@
         "FINISH_CARING"
       ],
       "required": true
-    },
-    "pets": {
-      "type": "relation",
-      "relation": "oneToMany",
-      "target": "api::pet.pet",
-      "mappedBy": "reservation"
     },
     "journal": {
       "type": "relation",
@@ -58,6 +48,18 @@
       "relation": "manyToOne",
       "target": "plugin::users-permissions.user",
       "inversedBy": "reservations"
+    },
+    "review": {
+      "type": "relation",
+      "relation": "oneToOne",
+      "target": "api::review.review",
+      "mappedBy": "reservation"
+    },
+    "pets": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "api::pet.pet",
+      "mappedBy": "reservation"
     }
   }
 }

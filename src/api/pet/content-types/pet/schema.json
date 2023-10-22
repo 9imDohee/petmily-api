@@ -14,10 +14,7 @@
   "attributes": {
     "type": {
       "type": "enumeration",
-      "enum": [
-        "CAT",
-        "DOG"
-      ],
+      "enum": ["CAT", "DOG"],
       "required": true
     },
     "name": {
@@ -55,17 +52,18 @@
       "type": "media",
       "multiple": false,
       "required": false,
-      "allowedTypes": [
-        "images",
-        "files",
-        "videos",
-        "audios"
-      ]
+      "allowedTypes": ["images", "files", "videos", "audios"]
     },
     "user": {
       "type": "relation",
       "relation": "manyToOne",
       "target": "plugin::users-permissions.user",
+      "inversedBy": "pets"
+    },
+    "journal": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "api::journal.journal",
       "inversedBy": "pets"
     },
     "review": {
