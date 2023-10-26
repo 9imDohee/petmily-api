@@ -52,7 +52,7 @@ module.exports = ({ env }) => {
         connectionString: env('DATABASE_URL'),
         host: env('DATABASE_HOST', 'localhost'),
         port: env.int('DATABASE_PORT', 5432),
-        database: env('DATABASE_NAME', 'petmily_db'),
+        database: env('DATABASE_NAME', 'petmily'),
         user: env('DATABASE_USERNAME', 'root'),
         password: env('DATABASE_PASSWORD', '0914'),
         ssl: env.bool('DATABASE_SSL', false) && {
