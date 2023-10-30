@@ -15,7 +15,7 @@
     "address": {
       "type": "string"
     },
-    "user": {
+    "client": {
       "type": "relation",
       "relation": "manyToOne",
       "target": "plugin::users-permissions.user",
@@ -56,6 +56,12 @@
       "relation": "oneToOne",
       "target": "api::journal.journal",
       "mappedBy": "reservation"
+    },
+    "petsitter": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "plugin::users-permissions.user",
+      "inversedBy": "reservation_petsitter"
     }
   }
 }

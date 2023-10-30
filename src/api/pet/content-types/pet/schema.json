@@ -70,12 +70,6 @@
       "relation": "manyToOne",
       "target": "api::review.review",
       "inversedBy": "pets"
-    },
-    "journal": {
-      "type": "relation",
-      "relation": "manyToOne",
-      "target": "api::journal.journal",
-      "inversedBy": "pets"
     }
   }
 }

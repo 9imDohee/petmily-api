@@ -77,12 +77,6 @@
       "type": "text",
       "required": true
     },
-    "reservations": {
-      "type": "relation",
-      "relation": "oneToMany",
-      "target": "api::reservation.reservation",
-      "mappedBy": "user"
-    },
     "photo": {
       "type": "media",
       "multiple": false,
@@ -99,6 +93,18 @@
       "relation": "oneToMany",
       "target": "api::pet.pet",
       "mappedBy": "user"
+    },
+    "reservations": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "api::reservation.reservation",
+      "mappedBy": "client"
+    },
+    "reservation_petsitter": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "api::reservation.reservation",
+      "mappedBy": "petsitter"
     }
   }
 }

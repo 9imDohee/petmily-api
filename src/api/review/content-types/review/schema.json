@@ -15,12 +15,6 @@
     "body": {
       "type": "text"
     },
-    "reviewPhotos": {
-      "type": "media",
-      "multiple": true,
-      "required": false,
-      "allowedTypes": ["images", "files", "videos", "audios"]
-    },
     "star": {
       "type": "integer"
     },
@@ -35,6 +29,16 @@
       "relation": "oneToMany",
       "target": "api::pet.pet",
       "mappedBy": "review"
+    },
+    "photos": {
+      "allowedTypes": [
+        "images",
+        "files",
+        "videos",
+        "audios"
+      ],
+      "type": "media",
+      "multiple": true
     }
   }
 }
