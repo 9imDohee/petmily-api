@@ -1,5 +1,7 @@
 "use strict";
 
+const reservation = require("../../reservation/controllers/reservation");
+
 /**
  * journal controller
  */
@@ -9,171 +11,228 @@ const { createCoreController } = require("@strapi/strapi").factories;
 module.exports = createCoreController("api::journal.journal", ({ strapi }) => ({
   // 케어 일지 전체 조회
   async find(ctx) {
-    try {
-      const journals = await strapi.entityService.findMany(
-        "api::journal.journal",
-        {
-          populate: {
-            photos: true,
-            reservation: {
-              populate: {
-                client: true,
-                pets: {
-                  populate: {
-                    file: true,
+    if (!ctx.state.user) {
+      ctx.send("에러");
+    } else {
+      // console.log(ctx.state.user);
+      try {
+        const userId = ctx.state.user.id;
+        // console.log(userId);
+
+        const journals = await strapi.entityService.findMany(
+          "api::journal.journal",
+          {
+            populate: {
+              photos: true,
+              reservation: {
+                populate: {
+                  client: true,
+                  petsitter: true,
+                  pets: {
+                    populate: {
+                      file: true,
+                    },
                   },
                 },
               },
             },
-          },
-        }
-      );
+            filters: {
+              reservation: {
+                $or: [
+                  { client: { id: userId } },
+                  { petsitter: { id: userId } },
+                ],
+              },
+            },
+          }
+        );
 
-      const modifiedJournals = journals.map((journal) => {
-        const petNames = journal.reservation.pets.map((pet) => pet.name);
+        // console.log(journals);
 
-        const petPhotos = journal.reservation.pets.map((pet) => pet.file);
+        const modifiedJournals = journals.map((journal) => {
+          const petNames = journal.reservation.pets.map((pet) => pet.name);
 
-        return {
-          journalId: journal.id,
-          reservationId: journal.reservation.id,
-          // petsitterId
-          memberId: journal.reservation.client.id,
-          createdAt: journal.createdAt,
-          lastModifiedAt: journal.updatedAt,
-          body: journal.body,
-          photos: journal.photos,
-          petNames: petNames,
-          petPhotos: petPhotos,
-          // petsitterName
-          // petsitterPhoto
-        };
-      });
-      ctx.send({ journals: modifiedJournals });
-    } catch (e) {
-      console.log(e);
+          const petPhotos = journal.reservation.pets.map((pet) => pet.file);
+
+          return {
+            journalId: journal.id,
+            reservationId: journal.reservation.id,
+            petsitterId: journal.reservation.petsitter.id,
+            memberId: journal.reservation.client.id,
+            createdAt: journal.createdAt,
+            lastModifiedAt: journal.updatedAt,
+            body: journal.body,
+            photos: journal.photos,
+            petNames: petNames,
+            petPhotos: petPhotos,
+            petsitterName: journal.reservation.petsitter.username,
+            // petsitterPhoto: journal.reservation.petsitter.photo,
+          };
+        });
+
+        ctx.send({ journals: modifiedJournals });
+      } catch (e) {
+        console.log(e);
+      }
     }
   },
 
   // 케어 일지 1개 조회
   async findOne(ctx) {
-    try {
-      const { id } = ctx.params;
-      const journal = await strapi.entityService.findOne(
-        "api::journal.journal",
-        id,
-        {
-          populate: {
-            photos: true,
-            reservation: {
-              populate: {
-                client: true,
-                pets: {
-                  populate: {
-                    file: true,
+    if (!ctx.state.user) {
+      ctx.send("에러");
+    } else {
+      try {
+        const userId = ctx.state.user.id;
+        // console.log(userId);
+
+        const { id } = ctx.params;
+        const journal = await strapi.entityService.findOne(
+          "api::journal.journal",
+          id,
+          {
+            populate: {
+              photos: true,
+              reservation: {
+                populate: {
+                  client: true,
+                  petsitter: true,
+                  pets: {
+                    populate: {
+                      file: true,
+                    },
                   },
                 },
               },
             },
-          },
+          }
+        );
+        console.log(journal);
+
+        if (
+          userId === journal.reservation.client.id ||
+          userId === journal.reservation.petsitter.id
+        ) {
+          const petNames = journal.reservation.pets.map((pet) => pet.name);
+          const petPhotos = journal.reservation.pets.map((pet) => pet.file);
+
+          const response = {
+            journalId: journal.id,
+            reservationId: journal.reservation.id,
+            petsitterId: journal.reservation.petsitter.id,
+            memberId: journal.reservation.client.id,
+            createdAt: journal.createdAt,
+            lastModifiedAt: journal.updatedAt,
+            body: journal.body,
+            photos: journal.photos,
+            petNames: petNames,
+            petPhotos: petPhotos,
+            petsitterName: journal.reservation.petsitter.username,
+            // petsitterPhoto
+          };
+
+          ctx.send(response);
+        } else {
+          console.log("예약에 해당하는 유저가 아닙니다.");
         }
-      );
-      console.log(journal);
-
-      const petNames = journal.reservation.pets.map((pet) => pet.name);
-      const petPhotos = journal.reservation.pets.map((pet) => pet.file);
-
-      const response = {
-        journalId: journal.id,
-        reservationId: journal.reservation.id,
-        // petsitterId
-        memberId: journal.reservation.client.id,
-        createdAt: journal.createdAt,
-        lastModifiedAt: journal.updatedAt,
-        body: journal.body,
-        photos: journal.photos,
-        petNames: petNames,
-        petPhotos: petPhotos,
-        // petsitterName
-        // petsitterPhoto
-      };
-
-      ctx.send(response);
-    } catch (e) {
-      console.log(e);
+      } catch (e) {
+        console.log(e);
+      }
     }
   },
 
-  // 케어 일지 등록 (?)
+  // 케어 일지 등록
   async create(ctx) {
-    try {
-      const requestBody = ctx.request.body;
-      console.log(requestBody);
+    const requestBody = ctx.request.body;
+    console.log(requestBody);
+    console.log(ctx.request.files.photos);
+    const reservationId = requestBody.reservationId;
 
-      const data = requestBody;
+    const reservation = await strapi.entityService.findOne(
+      "api::reservation.reservation",
+      reservationId,
+      {
+        populate: { petsitter: { fields: ["id", "username"] } },
+      }
+    );
 
-      // response 수정
-      // journal > reservation > user > client / petsitter
-      // const petsitterId = 30;
-      // const memberId = 1;
+    if (reservation.petsitter.id === ctx.state.user.id) {
+      try {
+        const createdAt = new Date().toISOString();
+        const lastModifiedAt = new Date().toISOString();
 
-      const createdAt = new Date().toISOString();
-      const lastModifiedAt = new Date().toISOString();
+        const data = {
+          ...requestBody,
+          photos: ctx.request.files.photos,
+          createdAt,
+          lastModifiedAt,
+          reservation: reservationId,
+        };
 
-      const newJournal = await strapi.entityService.create(
-        "api::journal.journal",
-        { data }
-      );
+        const newJournal = await strapi.entityService.create(
+          "api::journal.journal",
+          { data }
+        );
 
-      const response = "Create Journal Success";
-      // journalId: newJournal.id,
-      // reservationId: data.reservationId,
-      // petsitterId,
-      // memberId,
-      // createdAt,
-      // lastModifiedAt,
-      // body: data.body,
-      // photos: data.photos,
+        const response = "Create Journal Success";
 
-      ctx.send(response);
-    } catch (e) {
-      console.log(e);
+        ctx.send(response);
+      } catch (e) {
+        console.log(e);
+      }
+    } else {
+      ctx.send("예약과 일치하지 않는 펫시터입니다.");
     }
   },
 
   // 케어 일지 수정
   async update(ctx) {
-    try {
+    if (!ctx.state.user) {
+      ctx.send("에러");
+    } else {
+      const userId = ctx.state.user.id;
+      console.log(userId);
       const { journalId } = ctx.params;
-      const requestBody = ctx.request.body;
-      console.log(requestBody);
-      const data = requestBody;
+      console.log(journalId);
 
-      // response 수정
-      const petsitterId = 30;
-      const memberId = 1;
-      const createdAt = requestBody.createdAt;
-      const lastModifiedAt = new Date().toISOString();
-
-      const updatedJournal = await strapi.entityService.update(
+      const journal = await strapi.entityService.findOne(
         "api::journal.journal",
         journalId,
-        requestBody
+        {
+          populate: {
+            reservation: {
+              populate: {
+                petsitter: true,
+              },
+            },
+          },
+        }
       );
 
-      const response = {
-        journalId: journalId,
-        reservationId: data.reservationId,
-        petsitterId,
-        memberId,
-        createdAt,
-        lastModifiedAt,
-        body: data.body,
-        photos: data.photos,
-      };
-      ctx.send(updatedJournal);
-    } catch (e) {
-      console.log(e);
+      console.log(journal);
+
+      if (userId === journal.reservation.petsitter.id) {
+        console.log("일치");
+      } else {
+        console.log("불일치");
+      }
+
+      try {
+        const requestBody = ctx.request.body;
+        console.log(requestBody);
+        const data = requestBody;
+
+        const updatedJournal = await strapi.entityService.update(
+          "api::journal.journal",
+          journalId,
+          { data }
+        );
+
+        const response = "Update Success";
+        ctx.send(updatedJournal);
+      } catch (e) {
+        console.log(e);
+      }
     }
   },
 }));
