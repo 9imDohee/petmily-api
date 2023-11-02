@@ -10,7 +10,7 @@ const { createCoreController } = require("@strapi/strapi").factories;
 
 module.exports = createCoreController("api::journal.journal", ({ strapi }) => ({
   // 케어 일지 전체 조회
-  async find(ctx) {
+  async fsnd(ctx) {
     if (!ctx.state.user) {
       ctx.send("에러");
     } else {
@@ -144,44 +144,58 @@ module.exports = createCoreController("api::journal.journal", ({ strapi }) => ({
   // 케어 일지 등록
   async create(ctx) {
     const requestBody = ctx.request.body;
-    console.log(requestBody);
-    console.log(ctx.request.files.photos);
+    // console.log(requestBody);
+
     const reservationId = requestBody.reservationId;
 
     const reservation = await strapi.entityService.findOne(
       "api::reservation.reservation",
       reservationId,
       {
-        populate: { petsitter: { fields: ["id", "username"] } },
+        populate: { journal: true },
       }
     );
+    console.log(reservation);
 
-    if (reservation.petsitter.id === ctx.state.user.id) {
-      try {
-        const createdAt = new Date().toISOString();
-        const lastModifiedAt = new Date().toISOString();
+    const existingJournal = reservation.journal;
+    console.log(existingJournal);
 
-        const data = {
-          ...requestBody,
-          photos: ctx.request.files.photos,
-          createdAt,
-          lastModifiedAt,
-          reservation: reservationId,
-        };
-
-        const newJournal = await strapi.entityService.create(
-          "api::journal.journal",
-          { data }
-        );
-
-        const response = "Create Journal Success";
-
-        ctx.send(response);
-      } catch (e) {
-        console.log(e);
-      }
+    if (existingJournal) {
+      ctx.send("이미 작성한 일지가 존재합니다.");
     } else {
-      ctx.send("예약과 일치하지 않는 펫시터입니다.");
+      const reservation = await strapi.entityService.findOne(
+        "api::reservation.reservation",
+        reservationId,
+        {
+          populate: { petsitter: { fields: ["id", "username"] } },
+        }
+      );
+
+      if (reservation.petsitter.id === ctx.state.user.id) {
+        try {
+          const createdAt = new Date().toISOString();
+          const lastModifiedAt = new Date().toISOString();
+
+          const data = {
+            ...requestBody,
+            createdAt,
+            lastModifiedAt,
+            reservation: reservationId,
+          };
+
+          const newJournal = await strapi.entityService.create(
+            "api::journal.journal",
+            { data }
+          );
+
+          const response = "Create Journal Success";
+          ctx.send(response);
+        } catch (e) {
+          console.log(e);
+        }
+      } else {
+        ctx.send("예약과 일치하지 않는 펫시터입니다.");
+      }
     }
   },
 
@@ -190,46 +204,47 @@ module.exports = createCoreController("api::journal.journal", ({ strapi }) => ({
     if (!ctx.state.user) {
       ctx.send("에러");
     } else {
-      const userId = ctx.state.user.id;
-      console.log(userId);
-      const { journalId } = ctx.params;
-      console.log(journalId);
-
-      const journal = await strapi.entityService.findOne(
-        "api::journal.journal",
-        journalId,
-        {
-          populate: {
-            reservation: {
-              populate: {
-                petsitter: true,
-              },
-            },
-          },
-        }
-      );
-
-      console.log(journal);
-
-      if (userId === journal.reservation.petsitter.id) {
-        console.log("일치");
-      } else {
-        console.log("불일치");
-      }
-
       try {
-        const requestBody = ctx.request.body;
-        console.log(requestBody);
-        const data = requestBody;
+        const userId = ctx.state.user.id;
+        console.log(userId);
 
-        const updatedJournal = await strapi.entityService.update(
+        const journalId = +ctx.params.id;
+        console.log(journalId);
+
+        const journal = await strapi.entityService.findOne(
           "api::journal.journal",
           journalId,
-          { data }
+          {
+            populate: {
+              reservation: {
+                populate: {
+                  petsitter: true,
+                },
+              },
+            },
+          }
         );
+        console.log(journal);
 
-        const response = "Update Success";
-        ctx.send(updatedJournal);
+        if (userId === journal.reservation.petsitter.id) {
+          console.log("일치");
+          try {
+            const requestBody = ctx.request.body;
+            console.log(requestBody);
+            const data = requestBody;
+
+            const updatedJournal = await strapi.entityService.update(
+              "api::journal.journal",
+              journalId,
+              { data }
+            );
+
+            const response = "Update Success";
+            ctx.send(response);
+          } catch (e) {
+            console.log(e);
+          }
+        }
       } catch (e) {
         console.log(e);
       }
