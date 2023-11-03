@@ -64,12 +64,6 @@
       "relation": "manyToOne",
       "target": "api::reservation.reservation",
       "inversedBy": "pets"
-    },
-    "review": {
-      "type": "relation",
-      "relation": "manyToOne",
-      "target": "api::review.review",
-      "inversedBy": "pets"
     }
   }
 }

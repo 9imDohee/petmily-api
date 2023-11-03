@@ -432,11 +432,6 @@ export interface ApiPetPet extends Schema.CollectionType {
       'manyToOne',
       'api::reservation.reservation'
     >;
-    review: Attribute.Relation<
-      'api::pet.pet',
-      'manyToOne',
-      'api::review.review'
-    >;
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;
     publishedAt: Attribute.DateTime;
@@ -533,7 +528,6 @@ export interface ApiReviewReview extends Schema.CollectionType {
       'oneToOne',
       'api::reservation.reservation'
     >;
-    pets: Attribute.Relation<'api::review.review', 'oneToMany', 'api::pet.pet'>;
     photos: Attribute.Media;
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;

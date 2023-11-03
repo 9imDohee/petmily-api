@@ -24,21 +24,16 @@
       "target": "api::reservation.reservation",
       "mappedBy": "review"
     },
-    "pets": {
-      "type": "relation",
-      "relation": "oneToMany",
-      "target": "api::pet.pet",
-      "mappedBy": "review"
-    },
     "photos": {
+      "type": "media",
+      "multiple": true,
+      "required": false,
       "allowedTypes": [
         "images",
         "files",
         "videos",
         "audios"
-      ],
-      "type": "media",
-      "multiple": true
+      ]
     }
   }
 }
