@@ -199,10 +199,9 @@ module.exports = createCoreController("api::review.review", ({ strapi }) => ({
   },
 
   async update(ctx) {
-    // reservation에 속한 client여야 작성 가능하다.
-    // console.log(ctx.state.user);
     const reviewId = +ctx.request.params.id;
     const { reservationId } = ctx.request.body;
+
     // console.log(ctx.request.files);
     const reservation = await strapi.entityService.findOne(
       "api::reservation.reservation",
@@ -217,11 +216,73 @@ module.exports = createCoreController("api::review.review", ({ strapi }) => ({
 
     const review = await strapi.entityService.findOne(
       "api::review.review",
-      reviewId
+      reviewId,
+      {
+        populate: { photos: true },
+      }
+    );
+    // console.log(review.photos.map());
+
+    // 유저가 이 예약을 가지고 있고, 작성된 review가 있어야 수정할 수 있다.
+    // params로 들어온 reviewId랑 reservation.review랑 일치해야 한다.
+    // console.log({ reservation });
+    // console.log(review.photos);
+
+    if (!reservation.review) {
+      return ctx.badRequest("리뷰를 먼저 등록해주세요.");
+    } else if (
+      ctx.state.user.id === reservation.client.id &&
+      reservation.review &&
+      reservation.review.id === reviewId
+    ) {
+      try {
+        const updatedReview = await strapi.entityService.update(
+          "api::review.review",
+          reviewId,
+          {
+            data: {
+              ...ctx.request.body,
+              // photos: [...review.photos, ctx.request.files.photos],
+            },
+          }
+        );
+        ctx.send("Updated Review Success.");
+      } catch (e) {
+        console.log(e);
+      }
+    }
+  },
+  async delete(ctx) {
+    const { id: reviewId } = ctx.params;
+
+    const review = await strapi.entityService.findOne(
+      "api::review.review",
+      reviewId,
+      {
+        populate: {
+          reservation: {
+            populate: { client: { fields: ["id"] } },
+            fields: ["id"],
+          },
+        },
+      }
     );
 
-    // 유저기 이 예약을 가지고 있고, 작성된 review가 있어야
-    console.log({ reservation });
-    console.log({ review });
+    // reservation에 review가 있어야 한다.
+    // 그 리뷰가 유저 소유인가를 확인
+    if (ctx.state.user.id !== review.reservation.client.id) {
+      ctx.badRequest("삭제할 권한이 없습니다.");
+    }
+    if (ctx.state.user.id === review.reservation.client.id && review) {
+      try {
+        const deleteReview = await strapi.entityService.delete(
+          "api::review.review",
+          reviewId
+        );
+        ctx.send("Delete Review Success.");
+      } catch (e) {
+        console.log(e);
+      }
+    }
   },
 }));

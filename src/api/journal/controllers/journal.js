@@ -17,7 +17,7 @@ module.exports = createCoreController("api::journal.journal", ({ strapi }) => ({
       // console.log(ctx.state.user);
       try {
         const userId = ctx.state.user.id;
-        // console.log(userId);
+        console.log(userId);
 
         const journals = await strapi.entityService.findMany(
           "api::journal.journal",
@@ -227,16 +227,16 @@ module.exports = createCoreController("api::journal.journal", ({ strapi }) => ({
         console.log(journal);
 
         if (userId === journal.reservation.petsitter.id) {
-          console.log("일치");
           try {
-            const requestBody = ctx.request.body;
-            console.log(requestBody);
-            const data = requestBody;
-
+            console.log(ctx.request.body);
             const updatedJournal = await strapi.entityService.update(
               "api::journal.journal",
               journalId,
-              { data }
+              {
+                data: {
+                  ...ctx.request.body,
+                },
+              }
             );
 
             const response = "Update Success";
