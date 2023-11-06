@@ -117,19 +117,10 @@ module.exports = createCoreController("api::pet.pet", ({ strapi }) => ({
   async create(ctx) {
     // pet 생성
     try {
-      const data = ctx.request.body;
+      const data = JSON.parse(ctx.request.body.data);
       const files = ctx.request.files; // 파일 업로드
 
       console.log(ctx.request.files);
-
-      let uploadedFiles;
-      if (files && files.photo && files.photo.length > 0) {
-        uploadedFiles = await strapi.plugins["upload"].service.upload.upload({
-          data: {},
-          files: files,
-        });
-        console.log(uploadedFiles);
-      }
 
       const newpet = await strapi.entityService.create("api::pet.pet", {
         data: {
@@ -141,12 +132,13 @@ module.exports = createCoreController("api::pet.pet", ({ strapi }) => ({
           male: data.male,
           species: data.species,
           body: data.body,
-          // 파일 업로드 후 생성된 파일의 id를 pet의 photo에 저장
-          file: uploadedFiles ? uploadedFiles[0].id : null,
           user: ctx.state.user.id,
         },
+        files: {
+          photos: files.files,
+        },
       });
-
+      console.log(files.File);
       // 펫 객체를 다시 조회. 'file' 필드를 포함시킵니다.
       const petWithFile = await strapi.entityService.findOne(
         "api::pet.pet",

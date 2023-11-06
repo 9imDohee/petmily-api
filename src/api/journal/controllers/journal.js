@@ -143,10 +143,13 @@ module.exports = createCoreController("api::journal.journal", ({ strapi }) => ({
 
   // 케어 일지 등록
   async create(ctx) {
-    const requestBody = ctx.request.body;
-    // console.log(requestBody);
+    // console.log(ctx.request.body);
+    const { reservationId, body } = JSON.parse(ctx.request.body.data);
+    // console.log(reservationId, body);
 
-    const reservationId = requestBody.reservationId;
+    // console.log(ctx.request);
+    const files = ctx.request.files;
+    console.log(files);
 
     const reservation = await strapi.entityService.findOne(
       "api::reservation.reservation",
@@ -173,19 +176,16 @@ module.exports = createCoreController("api::journal.journal", ({ strapi }) => ({
 
       if (reservation.petsitter.id === ctx.state.user.id) {
         try {
-          const createdAt = new Date().toISOString();
-          const lastModifiedAt = new Date().toISOString();
-
           const data = {
-            ...requestBody,
-            createdAt,
-            lastModifiedAt,
+            body: body,
+
             reservation: reservationId,
           };
 
           const newJournal = await strapi.entityService.create(
             "api::journal.journal",
-            { data }
+            // { data }
+            { data, files: { photos: files.files } }
           );
 
           const response = "Create Journal Success";
