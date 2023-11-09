@@ -19,7 +19,6 @@ module.exports = createCoreController(
       } else {
         try {
           const userId = ctx.state.user.id;
-          // console.log(userId);
 
           const { id } = ctx.params;
           const reservation = await strapi.entityService.findOne(
@@ -47,7 +46,6 @@ module.exports = createCoreController(
               },
             }
           );
-          console.log(reservation);
 
           if (
             userId === reservation.client.id ||
@@ -150,10 +148,8 @@ module.exports = createCoreController(
       } else {
         try {
           const userId = ctx.state.user.id;
-          console.log(userId);
 
           const reservationId = +ctx.params.reservationId;
-          console.log(reservationId);
 
           const reservation = await strapi.entityService.findOne(
             "api::reservation.reservation",
@@ -164,15 +160,12 @@ module.exports = createCoreController(
               },
             }
           );
-          console.log(reservation);
 
           if (
             userId === reservation.petsitter.id &&
             reservation.progress === "RESERVATION_CONFIRMED"
           ) {
             try {
-              // console.log(ctx.request.body);
-
               const response = await strapi.entityService.update(
                 "api::reservation.reservation",
                 reservationId,
@@ -180,13 +173,9 @@ module.exports = createCoreController(
               );
 
               ctx.send("cancelled");
-            } catch (e) {
-              console.log(e);
-            }
+            } catch (e) {}
           }
-        } catch (e) {
-          console.log(e);
-        }
+        } catch (e) {}
       }
     },
 
@@ -197,7 +186,6 @@ module.exports = createCoreController(
       } else {
         try {
           const userId = ctx.state.user.id;
-          console.log(userId);
 
           const reservationId = +ctx.params.reservationId;
           console.log(reservationId);
@@ -211,7 +199,6 @@ module.exports = createCoreController(
               },
             }
           );
-          console.log(reservation);
 
           if (
             userId === reservation.client.id &&
@@ -238,7 +225,6 @@ module.exports = createCoreController(
       // 예약 생성
       try {
         const data = JSON.parse(ctx.request.body.data);
-        console.log(data);
         const reservation = await strapi.entityService.create(
           "api::reservation.reservation",
           {
@@ -333,7 +319,7 @@ module.exports = createCoreController(
             journalId: reservations.journalId ? reservations.journalId : null,
           }));
 
-          console.log(modifiedReservations);
+          // console.log(modifiedReservations);
           ctx.send(modifiedReservations);
         } catch (e) {
           console.log(e);
@@ -370,7 +356,6 @@ module.exports = createCoreController(
               limit: +ctx.request.query.page * +ctx.request.query.size || 0,
             }
           );
-          // ctx.send(reservations);
 
           const modifiedReservations = reservations.map((reservations) => ({
             reservationId: reservations.id,
@@ -402,7 +387,7 @@ module.exports = createCoreController(
             journalId: reservations.journalId ? reservations.journalId : null,
           }));
 
-          console.log(modifiedReservations);
+          // console.log(modifiedReservations);
           ctx.send(modifiedReservations);
         } catch (e) {
           console.log(e);
@@ -458,7 +443,7 @@ module.exports = createCoreController(
             },
           }
         );
-        console.log(reservation);
+        // console.log(reservation);
         if (!reservation) {
           return ctx.notFound("예약정보를 찾을 수 없습니다");
         }
@@ -484,7 +469,7 @@ module.exports = createCoreController(
           }
         );
 
-        console.log(petsitter);
+        // console.log(petsitter);
         ctx.send(petsitter);
       } catch (e) {
         console.error("해당 예약에 맞는 펫시터를 찾을 수 없습니다.");
