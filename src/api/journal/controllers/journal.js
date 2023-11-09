@@ -10,7 +10,7 @@ const { createCoreController } = require("@strapi/strapi").factories;
 
 module.exports = createCoreController("api::journal.journal", ({ strapi }) => ({
   // 케어 일지 전체 조회
-  async fsnd(ctx) {
+  async find(ctx) {
     if (!ctx.state.user) {
       ctx.send("에러");
     } else {

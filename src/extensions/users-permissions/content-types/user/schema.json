@@ -105,6 +105,9 @@
       "relation": "oneToMany",
       "target": "api::reservation.reservation",
       "mappedBy": "petsitter"
+    },
+    "body": {
+      "type": "text"
     }
   }
 }
