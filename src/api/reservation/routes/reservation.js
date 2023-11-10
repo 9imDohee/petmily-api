@@ -4,7 +4,7 @@
  * reservation router
  */
 
-const { createCoreRouter } = require("@strapi/strapi").factories;
+// const { createCoreRouter } = require("@strapi/strapi").factories;
 
 module.exports = {
   routes: [
@@ -25,6 +25,12 @@ module.exports = {
       method: "PUT",
       path: "/reservations/:reservationId/membercancel",
       handler: "reservation.memberCancel",
+    },
+    // 예약 가능 펫시터 찾기
+    {
+      method: "POST",
+      path: "/reservations/petsitters",
+      handler: "reservation.findPossiblePetsitter",
     },
   ],
 };

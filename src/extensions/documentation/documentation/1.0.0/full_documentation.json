@@ -14,7 +14,7 @@
       "name": "Apache 2.0",
       "url": "https://www.apache.org/licenses/LICENSE-2.0.html"
     },
-    "x-generation-date": "2023-11-09T08:37:54.009Z"
+    "x-generation-date": "2023-11-10T06:33:10.184Z"
   },
   "x-strapi-config": {
     "path": "/documentation",
@@ -1488,6 +1488,36 @@
                                     }
                                   },
                                   "body": {
+                                    "type": "string"
+                                  },
+                                  "star": {
+                                    "type": "integer"
+                                  },
+                                  "reviewCount": {
+                                    "type": "integer"
+                                  },
+                                  "possibleDay": {
+                                    "type": "string"
+                                  },
+                                  "possibleTimeStart": {
+                                    "type": "string",
+                                    "format": "time",
+                                    "example": "12:54.000"
+                                  },
+                                  "possibleTimeEnd": {
+                                    "type": "string",
+                                    "format": "time",
+                                    "example": "12:54.000"
+                                  },
+                                  "possiblePetType": {
+                                    "type": "string",
+                                    "enum": [
+                                      "CAT",
+                                      "DOG",
+                                      "DOGCAT"
+                                    ]
+                                  },
+                                  "possibleLocation": {
                                     "type": "string"
                                   },
                                   "createdAt": {
@@ -4221,6 +4251,36 @@
                       "body": {
                         "type": "string"
                       },
+                      "star": {
+                        "type": "integer"
+                      },
+                      "reviewCount": {
+                        "type": "integer"
+                      },
+                      "possibleDay": {
+                        "type": "string"
+                      },
+                      "possibleTimeStart": {
+                        "type": "string",
+                        "format": "time",
+                        "example": "12:54.000"
+                      },
+                      "possibleTimeEnd": {
+                        "type": "string",
+                        "format": "time",
+                        "example": "12:54.000"
+                      },
+                      "possiblePetType": {
+                        "type": "string",
+                        "enum": [
+                          "CAT",
+                          "DOG",
+                          "DOGCAT"
+                        ]
+                      },
+                      "possibleLocation": {
+                        "type": "string"
+                      },
                       "createdAt": {
                         "type": "string",
                         "format": "date-time"
@@ -6201,6 +6261,36 @@
                       "body": {
                         "type": "string"
                       },
+                      "star": {
+                        "type": "integer"
+                      },
+                      "reviewCount": {
+                        "type": "integer"
+                      },
+                      "possibleDay": {
+                        "type": "string"
+                      },
+                      "possibleTimeStart": {
+                        "type": "string",
+                        "format": "time",
+                        "example": "12:54.000"
+                      },
+                      "possibleTimeEnd": {
+                        "type": "string",
+                        "format": "time",
+                        "example": "12:54.000"
+                      },
+                      "possiblePetType": {
+                        "type": "string",
+                        "enum": [
+                          "CAT",
+                          "DOG",
+                          "DOGCAT"
+                        ]
+                      },
+                      "possibleLocation": {
+                        "type": "string"
+                      },
                       "createdAt": {
                         "type": "string",
                         "format": "date-time"
@@ -7682,6 +7772,36 @@
                                     }
                                   },
                                   "body": {
+                                    "type": "string"
+                                  },
+                                  "star": {
+                                    "type": "integer"
+                                  },
+                                  "reviewCount": {
+                                    "type": "integer"
+                                  },
+                                  "possibleDay": {
+                                    "type": "string"
+                                  },
+                                  "possibleTimeStart": {
+                                    "type": "string",
+                                    "format": "time",
+                                    "example": "12:54.000"
+                                  },
+                                  "possibleTimeEnd": {
+                                    "type": "string",
+                                    "format": "time",
+                                    "example": "12:54.000"
+                                  },
+                                  "possiblePetType": {
+                                    "type": "string",
+                                    "enum": [
+                                      "CAT",
+                                      "DOG",
+                                      "DOGCAT"
+                                    ]
+                                  },
+                                  "possibleLocation": {
                                     "type": "string"
                                   },
                                   "createdAt": {
@@ -9996,6 +10116,87 @@
           }
         ],
         "operationId": "put/reservations/{reservationId}/membercancel",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ReservationRequest"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/reservations/petsitters": {
+      "post": {
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReservationResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "Reservation"
+        ],
+        "parameters": [],
+        "operationId": "post/reservations/petsitters",
         "requestBody": {
           "required": true,
           "content": {

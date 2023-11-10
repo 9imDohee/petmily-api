@@ -362,6 +362,192 @@ export interface AdminTransferTokenPermission extends Schema.CollectionType {
   };
 }
 
+export interface ApiJournalJournal extends Schema.CollectionType {
+  collectionName: 'journals';
+  info: {
+    singularName: 'journal';
+    pluralName: 'journals';
+    displayName: 'Journal';
+    description: '';
+  };
+  options: {
+    draftAndPublish: true;
+  };
+  attributes: {
+    body: Attribute.Text;
+    photos: Attribute.Media;
+    reservation: Attribute.Relation<
+      'api::journal.journal',
+      'oneToOne',
+      'api::reservation.reservation'
+    >;
+    createdAt: Attribute.DateTime;
+    updatedAt: Attribute.DateTime;
+    publishedAt: Attribute.DateTime;
+    createdBy: Attribute.Relation<
+      'api::journal.journal',
+      'oneToOne',
+      'admin::user'
+    > &
+      Attribute.Private;
+    updatedBy: Attribute.Relation<
+      'api::journal.journal',
+      'oneToOne',
+      'admin::user'
+    > &
+      Attribute.Private;
+  };
+}
+
+export interface ApiPetPet extends Schema.CollectionType {
+  collectionName: 'pets';
+  info: {
+    singularName: 'pet';
+    pluralName: 'pets';
+    displayName: 'Pet';
+    description: '';
+  };
+  options: {
+    draftAndPublish: true;
+  };
+  attributes: {
+    type: Attribute.Enumeration<['CAT', 'DOG']> &
+      Attribute.Required &
+      Attribute.Private;
+    name: Attribute.String;
+    age: Attribute.Integer;
+    species: Attribute.String;
+    weight: Attribute.Decimal;
+    body: Attribute.Text;
+    male: Attribute.Boolean;
+    neutering: Attribute.Boolean;
+    file: Attribute.Media;
+    user: Attribute.Relation<
+      'api::pet.pet',
+      'manyToOne',
+      'plugin::users-permissions.user'
+    >;
+    reservation: Attribute.Relation<
+      'api::pet.pet',
+      'manyToOne',
+      'api::reservation.reservation'
+    >;
+    createdAt: Attribute.DateTime;
+    updatedAt: Attribute.DateTime;
+    publishedAt: Attribute.DateTime;
+    createdBy: Attribute.Relation<'api::pet.pet', 'oneToOne', 'admin::user'> &
+      Attribute.Private;
+    updatedBy: Attribute.Relation<'api::pet.pet', 'oneToOne', 'admin::user'> &
+      Attribute.Private;
+  };
+}
+
+export interface ApiReservationReservation extends Schema.CollectionType {
+  collectionName: 'reservations';
+  info: {
+    singularName: 'reservation';
+    pluralName: 'reservations';
+    displayName: 'Reservation';
+    description: '';
+  };
+  options: {
+    draftAndPublish: true;
+  };
+  attributes: {
+    address: Attribute.String;
+    client: Attribute.Relation<
+      'api::reservation.reservation',
+      'manyToOne',
+      'plugin::users-permissions.user'
+    >;
+    pets: Attribute.Relation<
+      'api::reservation.reservation',
+      'oneToMany',
+      'api::pet.pet'
+    >;
+    reservationDay: Attribute.Date;
+    reservationTimeStart: Attribute.Time;
+    reservationTimeEnd: Attribute.Time;
+    progress: Attribute.Enumeration<
+      [
+        'RESERVATION_REQUEST',
+        'RESERVATION_CONFIRMED',
+        'RESERVATION_CANCELLED',
+        'FINISH_CARING'
+      ]
+    >;
+    review: Attribute.Relation<
+      'api::reservation.reservation',
+      'oneToOne',
+      'api::review.review'
+    >;
+    journal: Attribute.Relation<
+      'api::reservation.reservation',
+      'oneToOne',
+      'api::journal.journal'
+    >;
+    petsitter: Attribute.Relation<
+      'api::reservation.reservation',
+      'manyToOne',
+      'plugin::users-permissions.user'
+    >;
+    body: Attribute.Text;
+    createdAt: Attribute.DateTime;
+    updatedAt: Attribute.DateTime;
+    publishedAt: Attribute.DateTime;
+    createdBy: Attribute.Relation<
+      'api::reservation.reservation',
+      'oneToOne',
+      'admin::user'
+    > &
+      Attribute.Private;
+    updatedBy: Attribute.Relation<
+      'api::reservation.reservation',
+      'oneToOne',
+      'admin::user'
+    > &
+      Attribute.Private;
+  };
+}
+
+export interface ApiReviewReview extends Schema.CollectionType {
+  collectionName: 'reviews';
+  info: {
+    singularName: 'review';
+    pluralName: 'reviews';
+    displayName: 'Review';
+    description: '';
+  };
+  options: {
+    draftAndPublish: true;
+  };
+  attributes: {
+    body: Attribute.Text;
+    star: Attribute.Integer;
+    reservation: Attribute.Relation<
+      'api::review.review',
+      'oneToOne',
+      'api::reservation.reservation'
+    >;
+    photos: Attribute.Media;
+    createdAt: Attribute.DateTime;
+    updatedAt: Attribute.DateTime;
+    publishedAt: Attribute.DateTime;
+    createdBy: Attribute.Relation<
+      'api::review.review',
+      'oneToOne',
+      'admin::user'
+    > &
+      Attribute.Private;
+    updatedBy: Attribute.Relation<
+      'api::review.review',
+      'oneToOne',
+      'admin::user'
+    > &
+      Attribute.Private;
+  };
+}
+
 export interface PluginUploadFile extends Schema.CollectionType {
   collectionName: 'files';
   info: {
@@ -679,6 +865,19 @@ export interface PluginUsersPermissionsUser extends Schema.CollectionType {
       'api::reservation.reservation'
     >;
     body: Attribute.Text;
+    star: Attribute.Integer &
+      Attribute.SetMinMax<{
+        min: 0;
+      }>;
+    reviewCount: Attribute.Integer &
+      Attribute.SetMinMax<{
+        min: 0;
+      }>;
+    possibleDay: Attribute.String;
+    possibleTimeStart: Attribute.Time;
+    possibleTimeEnd: Attribute.Time;
+    possiblePetType: Attribute.Enumeration<['CAT', 'DOG', 'DOGCAT']>;
+    possibleLocation: Attribute.String;
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;
     createdBy: Attribute.Relation<
@@ -689,192 +888,6 @@ export interface PluginUsersPermissionsUser extends Schema.CollectionType {
       Attribute.Private;
     updatedBy: Attribute.Relation<
       'plugin::users-permissions.user',
-      'oneToOne',
-      'admin::user'
-    > &
-      Attribute.Private;
-  };
-}
-
-export interface ApiJournalJournal extends Schema.CollectionType {
-  collectionName: 'journals';
-  info: {
-    singularName: 'journal';
-    pluralName: 'journals';
-    displayName: 'Journal';
-    description: '';
-  };
-  options: {
-    draftAndPublish: true;
-  };
-  attributes: {
-    body: Attribute.Text;
-    photos: Attribute.Media;
-    reservation: Attribute.Relation<
-      'api::journal.journal',
-      'oneToOne',
-      'api::reservation.reservation'
-    >;
-    createdAt: Attribute.DateTime;
-    updatedAt: Attribute.DateTime;
-    publishedAt: Attribute.DateTime;
-    createdBy: Attribute.Relation<
-      'api::journal.journal',
-      'oneToOne',
-      'admin::user'
-    > &
-      Attribute.Private;
-    updatedBy: Attribute.Relation<
-      'api::journal.journal',
-      'oneToOne',
-      'admin::user'
-    > &
-      Attribute.Private;
-  };
-}
-
-export interface ApiPetPet extends Schema.CollectionType {
-  collectionName: 'pets';
-  info: {
-    singularName: 'pet';
-    pluralName: 'pets';
-    displayName: 'Pet';
-    description: '';
-  };
-  options: {
-    draftAndPublish: true;
-  };
-  attributes: {
-    type: Attribute.Enumeration<['CAT', 'DOG']> &
-      Attribute.Required &
-      Attribute.Private;
-    name: Attribute.String;
-    age: Attribute.Integer;
-    species: Attribute.String;
-    weight: Attribute.Decimal;
-    body: Attribute.Text;
-    male: Attribute.Boolean;
-    neutering: Attribute.Boolean;
-    file: Attribute.Media;
-    user: Attribute.Relation<
-      'api::pet.pet',
-      'manyToOne',
-      'plugin::users-permissions.user'
-    >;
-    reservation: Attribute.Relation<
-      'api::pet.pet',
-      'manyToOne',
-      'api::reservation.reservation'
-    >;
-    createdAt: Attribute.DateTime;
-    updatedAt: Attribute.DateTime;
-    publishedAt: Attribute.DateTime;
-    createdBy: Attribute.Relation<'api::pet.pet', 'oneToOne', 'admin::user'> &
-      Attribute.Private;
-    updatedBy: Attribute.Relation<'api::pet.pet', 'oneToOne', 'admin::user'> &
-      Attribute.Private;
-  };
-}
-
-export interface ApiReservationReservation extends Schema.CollectionType {
-  collectionName: 'reservations';
-  info: {
-    singularName: 'reservation';
-    pluralName: 'reservations';
-    displayName: 'Reservation';
-    description: '';
-  };
-  options: {
-    draftAndPublish: true;
-  };
-  attributes: {
-    address: Attribute.String;
-    client: Attribute.Relation<
-      'api::reservation.reservation',
-      'manyToOne',
-      'plugin::users-permissions.user'
-    >;
-    pets: Attribute.Relation<
-      'api::reservation.reservation',
-      'oneToMany',
-      'api::pet.pet'
-    >;
-    reservationDay: Attribute.Date;
-    reservationTimeStart: Attribute.Time;
-    reservationTimeEnd: Attribute.Time;
-    progress: Attribute.Enumeration<
-      [
-        'RESERVATION_REQUEST',
-        'RESERVATION_CONFIRMED',
-        'RESERVATION_CANCELLED',
-        'FINISH_CARING'
-      ]
-    >;
-    review: Attribute.Relation<
-      'api::reservation.reservation',
-      'oneToOne',
-      'api::review.review'
-    >;
-    journal: Attribute.Relation<
-      'api::reservation.reservation',
-      'oneToOne',
-      'api::journal.journal'
-    >;
-    petsitter: Attribute.Relation<
-      'api::reservation.reservation',
-      'manyToOne',
-      'plugin::users-permissions.user'
-    >;
-    body: Attribute.Text;
-    createdAt: Attribute.DateTime;
-    updatedAt: Attribute.DateTime;
-    publishedAt: Attribute.DateTime;
-    createdBy: Attribute.Relation<
-      'api::reservation.reservation',
-      'oneToOne',
-      'admin::user'
-    > &
-      Attribute.Private;
-    updatedBy: Attribute.Relation<
-      'api::reservation.reservation',
-      'oneToOne',
-      'admin::user'
-    > &
-      Attribute.Private;
-  };
-}
-
-export interface ApiReviewReview extends Schema.CollectionType {
-  collectionName: 'reviews';
-  info: {
-    singularName: 'review';
-    pluralName: 'reviews';
-    displayName: 'Review';
-    description: '';
-  };
-  options: {
-    draftAndPublish: true;
-  };
-  attributes: {
-    body: Attribute.Text;
-    star: Attribute.Integer;
-    reservation: Attribute.Relation<
-      'api::review.review',
-      'oneToOne',
-      'api::reservation.reservation'
-    >;
-    photos: Attribute.Media;
-    createdAt: Attribute.DateTime;
-    updatedAt: Attribute.DateTime;
-    publishedAt: Attribute.DateTime;
-    createdBy: Attribute.Relation<
-      'api::review.review',
-      'oneToOne',
-      'admin::user'
-    > &
-      Attribute.Private;
-    updatedBy: Attribute.Relation<
-      'api::review.review',
       'oneToOne',
       'admin::user'
     > &
@@ -892,16 +905,16 @@ declare module '@strapi/types' {
       'admin::api-token-permission': AdminApiTokenPermission;
       'admin::transfer-token': AdminTransferToken;
       'admin::transfer-token-permission': AdminTransferTokenPermission;
+      'api::journal.journal': ApiJournalJournal;
+      'api::pet.pet': ApiPetPet;
+      'api::reservation.reservation': ApiReservationReservation;
+      'api::review.review': ApiReviewReview;
       'plugin::upload.file': PluginUploadFile;
       'plugin::upload.folder': PluginUploadFolder;
       'plugin::i18n.locale': PluginI18NLocale;
       'plugin::users-permissions.permission': PluginUsersPermissionsPermission;
       'plugin::users-permissions.role': PluginUsersPermissionsRole;
       'plugin::users-permissions.user': PluginUsersPermissionsUser;
-      'api::journal.journal': ApiJournalJournal;
-      'api::pet.pet': ApiPetPet;
-      'api::reservation.reservation': ApiReservationReservation;
-      'api::review.review': ApiReviewReview;
     }
   }
 }

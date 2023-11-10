@@ -319,7 +319,7 @@ module.exports = createCoreController(
             journalId: reservations.journalId ? reservations.journalId : null,
           }));
 
-          // console.log(modifiedReservations);
+          console.log(modifiedReservations);
           ctx.send(modifiedReservations);
         } catch (e) {
           console.log(e);
@@ -356,6 +356,7 @@ module.exports = createCoreController(
               limit: +ctx.request.query.page * +ctx.request.query.size || 0,
             }
           );
+          // ctx.send(reservations);
 
           const modifiedReservations = reservations.map((reservations) => ({
             reservationId: reservations.id,
@@ -387,7 +388,7 @@ module.exports = createCoreController(
             journalId: reservations.journalId ? reservations.journalId : null,
           }));
 
-          // console.log(modifiedReservations);
+          console.log(modifiedReservations);
           ctx.send(modifiedReservations);
         } catch (e) {
           console.log(e);
@@ -417,63 +418,104 @@ module.exports = createCoreController(
       }
     },
 
-    async findOne(ctx) {
+    async findPossiblePetsitter(ctx) {
       // 예약정보에 맞는 펫시터 조회
-      const { id: reservationId } = ctx.params;
+      const {
+        reservationDay,
+        reservationTimeStart,
+        reservationTimeEnd,
+        address,
+        petId,
+      } = ctx.request.body;
 
+      // petsitter검색
       try {
-        const reservation = await strapi.entityService.findOne(
-          "api::reservation.reservation",
-          +reservationId,
-          {
-            // filters: {
-            //   id: { $eq: reservationId },
-            // },
-            populate: {
-              reservations: {
-                fields: [
-                  "reservationDay",
-                  "reservationTimeStart",
-                  "reservationTimeEnd",
-                  "address",
-                ],
-              },
-              pets: true,
-              petsitter: true,
-            },
-          }
-        );
-        // console.log(reservation);
-        if (!reservation) {
-          return ctx.notFound("예약정보를 찾을 수 없습니다");
-        }
-        // 앞서 검색한 예약 정보를 가지고 필터링해서 펫시터 검색
-        const petsitter = await strapi.entityService.findMany(
-          "api::reservation.reservation",
+        const pets = await strapi.entityService.findMany("api::pet.pet", {
+          filters: {
+            id: petId,
+          },
+        });
+
+        const petsType = pets.map((pet) => pet.type);
+
+        const petsitters = await strapi.entityService.findMany(
+          "plugin::users-permissions.user",
           {
             filters: {
-              reservationDay: {
-                $eq: reservation.reservationDay,
+              possibleDay: { $contains: "월화수목금" },
+              possibleTimeStart: {
+                $lte: reservationTimeStart,
               },
-              reservationTimeStart: {
-                $lte: reservation.reservationTimeStart,
+              possibleTimeEnd: { $gte: reservationTimeEnd },
+              // possibleLocatiosn: {
+              //   $contains: address.split(" ").slice(1, 3).join(" "),
+              // },
+              possiblePetType: {
+                $in: petsType,
               },
-              reservationTimeEnd: {
-                $gte: reservation.reservationTimeEnd,
-              },
-              address: { $eq: reservation.address },
-            },
-            populate: {
-              petsitter: { populate: { role: true, photo: true } },
             },
           }
         );
 
-        // console.log(petsitter);
-        ctx.send(petsitter);
-      } catch (e) {
-        console.error("해당 예약에 맞는 펫시터를 찾을 수 없습니다.");
-      }
+        ctx.send(petsitters);
+      } catch (e) {}
+
+      // try {
+      //   if (!reservation) {
+      //     return ctx.notFound("예약정보를 찾을 수 없습니다");
+      //   }
+      //   // 앞서 검색한 예약 정보를 가지고 필터링해서 펫시터 검색
+      //   const petsitter = await strapi.entityService.findMany(
+      //     "plugin::users-permissions.user",
+      //     {
+      //       filters: {
+      //         possibleDay: {
+      //           $in: ["월"],
+      //           // const days = ['일', '월', '화', '수', '목', '금', '토'];
+      //           // let reservationDayStr = days[reservation.reservationDay.getDay()];
+      //         },
+      //         possibleTimeStart: {
+      //           $lte: reservation.reservationTimeStart,
+      //         },
+      //         possibleTimeEnd: {
+      //           $gte: reservation.reservationTimeEnd,
+      //         },
+      //         address: { $in: [reservation.address] },
+      //       },
+      //       populate: {
+      //         petsitter: { populate: { role: true, photo: true } },
+      //         pets: true,
+      //       },
+      //     }
+      //   );
+
+      //   const possiblePetsitters = petsitter.map((petsitter) => ({
+      //     memberId: reservation.client.id,
+      //     petsitterId: reservation.petsitter.id,
+      //     name: reservation.petsitter.username,
+      //     nickName: reservation.petsitter.nickName,
+      //     photo:
+      //       reservation.petsitter && // reservations.petsitter.photo가 null일 경우, formats 속성에 접근하면 에러발생나는 것 방지
+      //       reservation.petsitter.photo &&
+      //       reservation.petsitter.photo.formats &&
+      //       reservation.petsitter.photo.formats.thumbnail
+      //         ? reservation.petsitter.photo.formats.thumbnail.url
+      //         : null,
+      //     possibleDay: reservation.petsitter.possibleDay
+      //       ? reservation.petsitter.possibleDay
+      //       : null,
+      //     possibleTimeStart: reservation.petsitter.possibleTimeStart,
+      //     possibleTimeEnd: reservation.petsitter.possibleTimeEnd,
+      //     star: reservation.petsitter.star ? reservation.petsitter.star : null,
+      //     reviewCount: reservation.petsitter.reviewCount
+      //       ? reservation.petsitter.reviewCount
+      //       : null,
+      //   }));
+
+      //   ctx.send(possiblePetsitters);
+      // } catch (e) {
+      //   console.error("해당 예약에 맞는 펫시터를 찾을 수 없습니다.");
+      // }
     },
   })
 );

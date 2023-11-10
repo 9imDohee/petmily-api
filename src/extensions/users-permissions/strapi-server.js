@@ -53,7 +53,7 @@ module.exports = (plugin) => {
         }
       );
 
-      ctx.send(newMember);
+      ctx.send({ data: "success create member" });
     } catch (e) {
       console.log(e);
     }
@@ -64,6 +64,8 @@ module.exports = (plugin) => {
     if (!ctx.state.user) {
       return ctx.badRequest("권한이 없습니다.");
     } else if (ctx.state.user.id === +ctx.params.id) {
+      console.log(ctx.request.body);
+
       const updatedUser = await strapi.entityService.update(
         "plugin::users-permissions.user",
         ctx.state.user.id,
@@ -80,7 +82,19 @@ module.exports = (plugin) => {
 
   // 회원정보 삭제
   plugin.controllers.user.destroy = async (ctx) => {
-    // console.log(ctx.params);
+    if (!ctx.state.user) {
+      return ctx.badRequest("권한이 없습니다.");
+    } else if (ctx.state.user.id === +ctx.params.id) {
+      try {
+        const deleteUser = await strapi.entityService.delete(
+          "plugin::users-permissions.user",
+          ctx.state.user.id
+        );
+        ctx.send({ data: "success delete member" });
+      } catch (e) {
+        console.log(e);
+      }
+    }
   };
 
   // 회원정보 조회 route
@@ -98,9 +112,6 @@ module.exports = (plugin) => {
     method: "POST",
     path: "/auth/local/register",
     handler: "auth.register",
-    config: {
-      auth: false,
-    },
   });
 
   // 회원정보 수정 route

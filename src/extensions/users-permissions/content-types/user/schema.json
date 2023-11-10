@@ -108,6 +108,34 @@
     },
     "body": {
       "type": "text"
+    },
+    "star": {
+      "type": "integer",
+      "min": 0
+    },
+    "reviewCount": {
+      "type": "integer",
+      "min": 0
+    },
+    "possibleDay": {
+      "type": "string"
+    },
+    "possibleTimeStart": {
+      "type": "time"
+    },
+    "possibleTimeEnd": {
+      "type": "time"
+    },
+    "possiblePetType": {
+      "type": "enumeration",
+      "enum": [
+        "CAT",
+        "DOG",
+        "DOGCAT"
+      ]
+    },
+    "possibleLocation": {
+      "type": "string"
     }
   }
 }
