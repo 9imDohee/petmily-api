@@ -16,7 +16,9 @@
       "type": "text"
     },
     "star": {
-      "type": "integer"
+      "type": "integer",
+      "max": 5,
+      "min": 0
     },
     "reservation": {
       "type": "relation",

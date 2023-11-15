@@ -27,7 +27,7 @@
       "target": "api::pet.pet",
       "mappedBy": "reservation"
     },
-    "reservationDay": {
+    "reservationDate": {
       "type": "date"
     },
     "reservationTimeStart": {

@@ -109,10 +109,6 @@
     "body": {
       "type": "text"
     },
-    "star": {
-      "type": "integer",
-      "min": 0
-    },
     "reviewCount": {
       "type": "integer",
       "min": 0
@@ -136,6 +132,18 @@
     },
     "possibleLocation": {
       "type": "string"
+    },
+    "likes": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "plugin::users-permissions.user",
+      "mappedBy": "liked"
+    },
+    "liked": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "plugin::users-permissions.user",
+      "inversedBy": "likes"
     }
   }
 }

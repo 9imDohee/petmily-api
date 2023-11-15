@@ -14,7 +14,7 @@
       "name": "Apache 2.0",
       "url": "https://www.apache.org/licenses/LICENSE-2.0.html"
     },
-    "x-generation-date": "2023-11-10T06:33:10.184Z"
+    "x-generation-date": "2023-11-15T07:45:24.675Z"
   },
   "x-strapi-config": {
     "path": "/documentation",
@@ -1490,9 +1490,6 @@
                                   "body": {
                                     "type": "string"
                                   },
-                                  "star": {
-                                    "type": "integer"
-                                  },
                                   "reviewCount": {
                                     "type": "integer"
                                   },
@@ -1519,6 +1516,43 @@
                                   },
                                   "possibleLocation": {
                                     "type": "string"
+                                  },
+                                  "likes": {
+                                    "type": "object",
+                                    "properties": {
+                                      "data": {
+                                        "type": "array",
+                                        "items": {
+                                          "type": "object",
+                                          "properties": {
+                                            "id": {
+                                              "type": "number"
+                                            },
+                                            "attributes": {
+                                              "type": "object",
+                                              "properties": {}
+                                            }
+                                          }
+                                        }
+                                      }
+                                    }
+                                  },
+                                  "liked": {
+                                    "type": "object",
+                                    "properties": {
+                                      "data": {
+                                        "type": "object",
+                                        "properties": {
+                                          "id": {
+                                            "type": "number"
+                                          },
+                                          "attributes": {
+                                            "type": "object",
+                                            "properties": {}
+                                          }
+                                        }
+                                      }
+                                    }
                                   },
                                   "createdAt": {
                                     "type": "string",
@@ -1588,7 +1622,7 @@
                           }
                         }
                       },
-                      "reservationDay": {
+                      "reservationDate": {
                         "type": "string",
                         "format": "date"
                       },
@@ -3605,7 +3639,7 @@
                                                     }
                                                   }
                                                 },
-                                                "reservationDay": {
+                                                "reservationDate": {
                                                   "type": "string",
                                                   "format": "date"
                                                 },
@@ -4251,9 +4285,6 @@
                       "body": {
                         "type": "string"
                       },
-                      "star": {
-                        "type": "integer"
-                      },
                       "reviewCount": {
                         "type": "integer"
                       },
@@ -4280,6 +4311,43 @@
                       },
                       "possibleLocation": {
                         "type": "string"
+                      },
+                      "likes": {
+                        "type": "object",
+                        "properties": {
+                          "data": {
+                            "type": "array",
+                            "items": {
+                              "type": "object",
+                              "properties": {
+                                "id": {
+                                  "type": "number"
+                                },
+                                "attributes": {
+                                  "type": "object",
+                                  "properties": {}
+                                }
+                              }
+                            }
+                          }
+                        }
+                      },
+                      "liked": {
+                        "type": "object",
+                        "properties": {
+                          "data": {
+                            "type": "object",
+                            "properties": {
+                              "id": {
+                                "type": "number"
+                              },
+                              "attributes": {
+                                "type": "object",
+                                "properties": {}
+                              }
+                            }
+                          }
+                        }
                       },
                       "createdAt": {
                         "type": "string",
@@ -4453,7 +4521,7 @@
                   "example": "string or id"
                 }
               },
-              "reservationDay": {
+              "reservationDate": {
                 "type": "string",
                 "format": "date"
               },
@@ -5615,7 +5683,7 @@
                                                     }
                                                   }
                                                 },
-                                                "reservationDay": {
+                                                "reservationDate": {
                                                   "type": "string",
                                                   "format": "date"
                                                 },
@@ -6261,9 +6329,6 @@
                       "body": {
                         "type": "string"
                       },
-                      "star": {
-                        "type": "integer"
-                      },
                       "reviewCount": {
                         "type": "integer"
                       },
@@ -6290,6 +6355,43 @@
                       },
                       "possibleLocation": {
                         "type": "string"
+                      },
+                      "likes": {
+                        "type": "object",
+                        "properties": {
+                          "data": {
+                            "type": "array",
+                            "items": {
+                              "type": "object",
+                              "properties": {
+                                "id": {
+                                  "type": "number"
+                                },
+                                "attributes": {
+                                  "type": "object",
+                                  "properties": {}
+                                }
+                              }
+                            }
+                          }
+                        }
+                      },
+                      "liked": {
+                        "type": "object",
+                        "properties": {
+                          "data": {
+                            "type": "object",
+                            "properties": {
+                              "id": {
+                                "type": "number"
+                              },
+                              "attributes": {
+                                "type": "object",
+                                "properties": {}
+                              }
+                            }
+                          }
+                        }
                       },
                       "createdAt": {
                         "type": "string",
@@ -6359,7 +6461,7 @@
               }
             }
           },
-          "reservationDay": {
+          "reservationDate": {
             "type": "string",
             "format": "date"
           },
@@ -7774,9 +7876,6 @@
                                   "body": {
                                     "type": "string"
                                   },
-                                  "star": {
-                                    "type": "integer"
-                                  },
                                   "reviewCount": {
                                     "type": "integer"
                                   },
@@ -7803,6 +7902,43 @@
                                   },
                                   "possibleLocation": {
                                     "type": "string"
+                                  },
+                                  "likes": {
+                                    "type": "object",
+                                    "properties": {
+                                      "data": {
+                                        "type": "array",
+                                        "items": {
+                                          "type": "object",
+                                          "properties": {
+                                            "id": {
+                                              "type": "number"
+                                            },
+                                            "attributes": {
+                                              "type": "object",
+                                              "properties": {}
+                                            }
+                                          }
+                                        }
+                                      }
+                                    }
+                                  },
+                                  "liked": {
+                                    "type": "object",
+                                    "properties": {
+                                      "data": {
+                                        "type": "object",
+                                        "properties": {
+                                          "id": {
+                                            "type": "number"
+                                          },
+                                          "attributes": {
+                                            "type": "object",
+                                            "properties": {}
+                                          }
+                                        }
+                                      }
+                                    }
                                   },
                                   "createdAt": {
                                     "type": "string",
@@ -7872,7 +8008,7 @@
                           }
                         }
                       },
-                      "reservationDay": {
+                      "reservationDate": {
                         "type": "string",
                         "format": "date"
                       },
@@ -10207,6 +10343,88 @@
             }
           }
         }
+      }
+    },
+    "/reservations/schedule/{id}": {
+      "get": {
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReservationResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "Reservation"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "",
+            "deprecated": false,
+            "required": true,
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "operationId": "get/reservations/schedule/{id}"
       }
     },
     "/reviews": {

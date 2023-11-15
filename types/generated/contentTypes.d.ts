@@ -465,7 +465,7 @@ export interface ApiReservationReservation extends Schema.CollectionType {
       'oneToMany',
       'api::pet.pet'
     >;
-    reservationDay: Attribute.Date;
+    reservationDate: Attribute.Date;
     reservationTimeStart: Attribute.Time;
     reservationTimeEnd: Attribute.Time;
     progress: Attribute.Enumeration<
@@ -523,7 +523,11 @@ export interface ApiReviewReview extends Schema.CollectionType {
   };
   attributes: {
     body: Attribute.Text;
-    star: Attribute.Integer;
+    star: Attribute.Integer &
+      Attribute.SetMinMax<{
+        min: 0;
+        max: 5;
+      }>;
     reservation: Attribute.Relation<
       'api::review.review',
       'oneToOne',
@@ -865,10 +869,6 @@ export interface PluginUsersPermissionsUser extends Schema.CollectionType {
       'api::reservation.reservation'
     >;
     body: Attribute.Text;
-    star: Attribute.Integer &
-      Attribute.SetMinMax<{
-        min: 0;
-      }>;
     reviewCount: Attribute.Integer &
       Attribute.SetMinMax<{
         min: 0;
@@ -878,6 +878,16 @@ export interface PluginUsersPermissionsUser extends Schema.CollectionType {
     possibleTimeEnd: Attribute.Time;
     possiblePetType: Attribute.Enumeration<['CAT', 'DOG', 'DOGCAT']>;
     possibleLocation: Attribute.String;
+    likes: Attribute.Relation<
+      'plugin::users-permissions.user',
+      'oneToMany',
+      'plugin::users-permissions.user'
+    >;
+    liked: Attribute.Relation<
+      'plugin::users-permissions.user',
+      'manyToOne',
+      'plugin::users-permissions.user'
+    >;
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;
     createdBy: Attribute.Relation<

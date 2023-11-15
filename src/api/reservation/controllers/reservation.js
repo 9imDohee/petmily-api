@@ -56,7 +56,7 @@ module.exports = createCoreController(
 
             const response = {
               reservationId: reservation.id,
-              reservationDay: reservation.reservationDay,
+              reservationDay: reservation.reservationDate,
               reservationTimeStart: reservation.reservationTimeStart,
               reservationTimeEnd: reservation.reservationTimeEnd,
               address: reservation.address,
@@ -230,7 +230,7 @@ module.exports = createCoreController(
           {
             data: {
               reservationBody: data.body,
-              reservationDay: data.reservationDay,
+              reservationDay: data.reservationDate,
               reservationTimeStart: data.reservationTimeStart,
               reservationTimeEnd: data.reservationTimeEnd,
               address: data.address,
@@ -291,7 +291,7 @@ module.exports = createCoreController(
 
           const modifiedReservations = reservations.map((reservations) => ({
             reservationId: reservations.id,
-            reservationDay: reservations.reservationDay,
+            reservationDay: reservations.reservationDate,
             reservationTimeStart: reservations.reservationTimeStart,
             reservationTimeEnd: reservations.reservationTimeEnd,
             address: reservations.address,
@@ -360,7 +360,7 @@ module.exports = createCoreController(
 
           const modifiedReservations = reservations.map((reservations) => ({
             reservationId: reservations.id,
-            reservationDay: reservations.reservationDay,
+            reservationDay: reservations.reservationDate,
             reservationTimeStart: reservations.reservationTimeStart,
             reservationTimeEnd: reservations.reservationTimeEnd,
             address: reservations.address,
@@ -421,7 +421,7 @@ module.exports = createCoreController(
     async findPossiblePetsitter(ctx) {
       // 예약정보에 맞는 펫시터 조회
       const {
-        reservationDay,
+        reservationDate,
         reservationTimeStart,
         reservationTimeEnd,
         address,
@@ -436,86 +436,109 @@ module.exports = createCoreController(
           },
         });
 
-        const petsType = pets.map((pet) => pet.type);
-
         const petsitters = await strapi.entityService.findMany(
           "plugin::users-permissions.user",
           {
             filters: {
-              possibleDay: { $contains: "월화수목금" },
+              possibleDay: {
+                $contains: new Date(reservationDate).toLocaleDateString(
+                  "ko-KR",
+                  {
+                    weekday: "short",
+                  }
+                ),
+              },
               possibleTimeStart: {
                 $lte: reservationTimeStart,
               },
-              possibleTimeEnd: { $gte: reservationTimeEnd },
-              // possibleLocatiosn: {
-              //   $contains: address.split(" ").slice(1, 3).join(" "),
-              // },
+              possibleTimeEnd: {
+                $gte: reservationTimeEnd,
+              },
+              possibleLocation: {
+                $contains: address.split(" ").slice(1, 3).join(" "),
+              },
               possiblePetType: {
-                $in: petsType,
+                $contains: pets.map((pet) => pet.type),
+              },
+            },
+            populate: { photo: { fields: ["url"] } },
+          }
+        );
+
+        const possiblePetsittersId = petsitters.map(
+          (petsitter) => petsitter.id
+        );
+        console.log(possiblePetsittersId);
+
+        const reviews = await strapi.entityService.findMany(
+          "api::review.review",
+          {
+            populate: {
+              reservation: {
+                populate: {
+                  petsitter: { filters: { id: possiblePetsittersId } },
+                },
+              },
+            },
+          }
+        );
+        console.log(reviews);
+
+        // console.log(petsitters);
+        const possiblePetsitters = petsitters.map((petsitter) => ({
+          petsitterId: petsitter.id,
+          name: petsitter.username,
+          nickName: petsitter.nickName,
+          photo: petsitter.photo ? petsitter.photo.url : null,
+          possibleDay: petsitter.possibleDay ? petsitter.possibleDay : null,
+          possibleTimeStart: petsitter.possibleTimeStart,
+          possibleTimeEnd: petsitter.possibleTimeEnd,
+          star: petsitter.star ? petsitter.star : null,
+          reviewCount: petsitter.reviewCount ? petsitter.reviewCount : null,
+        }));
+
+        // ctx.send(possiblePetsitters);
+      } catch (e) {
+        console.error("해당 예약에 맞는 펫시터를 찾을 수 없습니다.");
+      }
+    },
+
+    // 펫시터 예약일정 조회
+    async sitterSchedule(ctx) {
+      const { id: petsitterId } = ctx.params;
+
+      console.log(petsitterId);
+      try {
+        const reservations = await strapi.entityService.findMany(
+          "api::reservation.reservation",
+          {
+            filters: {
+              petsitter: { id: { $eq: petsitterId } },
+              reservationDate: {
+                $gte: new Date().toISOString().substring(0, 10),
+              },
+              progress: {
+                $notIn: ["RESERVATION_CANCELLED", "FINISH_CARING"],
               },
             },
           }
         );
 
-        ctx.send(petsitters);
-      } catch (e) {}
+        console.log(reservations);
 
-      // try {
-      //   if (!reservation) {
-      //     return ctx.notFound("예약정보를 찾을 수 없습니다");
-      //   }
-      //   // 앞서 검색한 예약 정보를 가지고 필터링해서 펫시터 검색
-      //   const petsitter = await strapi.entityService.findMany(
-      //     "plugin::users-permissions.user",
-      //     {
-      //       filters: {
-      //         possibleDay: {
-      //           $in: ["월"],
-      //           // const days = ['일', '월', '화', '수', '목', '금', '토'];
-      //           // let reservationDayStr = days[reservation.reservationDay.getDay()];
-      //         },
-      //         possibleTimeStart: {
-      //           $lte: reservation.reservationTimeStart,
-      //         },
-      //         possibleTimeEnd: {
-      //           $gte: reservation.reservationTimeEnd,
-      //         },
-      //         address: { $in: [reservation.address] },
-      //       },
-      //       populate: {
-      //         petsitter: { populate: { role: true, photo: true } },
-      //         pets: true,
-      //       },
-      //     }
-      //   );
+        const transformedReservations = reservations.map((reservation) => ({
+          reservationId: reservation.id,
+          reservationDate: reservation.reservationDate,
+          reservationTimeStart: reservation.reservationTimeStart,
+          reservationTimeEnd: reservation.reservationTimeEnd,
+          progress: reservation.progress,
+        }));
 
-      //   const possiblePetsitters = petsitter.map((petsitter) => ({
-      //     memberId: reservation.client.id,
-      //     petsitterId: reservation.petsitter.id,
-      //     name: reservation.petsitter.username,
-      //     nickName: reservation.petsitter.nickName,
-      //     photo:
-      //       reservation.petsitter && // reservations.petsitter.photo가 null일 경우, formats 속성에 접근하면 에러발생나는 것 방지
-      //       reservation.petsitter.photo &&
-      //       reservation.petsitter.photo.formats &&
-      //       reservation.petsitter.photo.formats.thumbnail
-      //         ? reservation.petsitter.photo.formats.thumbnail.url
-      //         : null,
-      //     possibleDay: reservation.petsitter.possibleDay
-      //       ? reservation.petsitter.possibleDay
-      //       : null,
-      //     possibleTimeStart: reservation.petsitter.possibleTimeStart,
-      //     possibleTimeEnd: reservation.petsitter.possibleTimeEnd,
-      //     star: reservation.petsitter.star ? reservation.petsitter.star : null,
-      //     reviewCount: reservation.petsitter.reviewCount
-      //       ? reservation.petsitter.reviewCount
-      //       : null,
-      //   }));
-
-      //   ctx.send(possiblePetsitters);
-      // } catch (e) {
-      //   console.error("해당 예약에 맞는 펫시터를 찾을 수 없습니다.");
-      // }
+        console.log(transformedReservations);
+        ctx.send(transformedReservations);
+      } catch (error) {
+        console.error(error);
+      }
     },
   })
 );

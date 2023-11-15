@@ -206,10 +206,8 @@ module.exports = createCoreController("api::journal.journal", ({ strapi }) => ({
     } else {
       try {
         const userId = ctx.state.user.id;
-        console.log(userId);
 
         const journalId = +ctx.params.id;
-        console.log(journalId);
 
         const journal = await strapi.entityService.findOne(
           "api::journal.journal",
@@ -224,18 +222,20 @@ module.exports = createCoreController("api::journal.journal", ({ strapi }) => ({
             },
           }
         );
-        console.log(journal);
 
         if (userId === journal.reservation.petsitter.id) {
           try {
-            console.log(ctx.request.body);
+            // const file = ctx.request.files;
+            const { body } = JSON.parse(ctx.request.body.data);
+            console.log(body);
             const updatedJournal = await strapi.entityService.update(
               "api::journal.journal",
               journalId,
               {
                 data: {
-                  ...ctx.request.body,
+                  body,
                 },
+                // files: { photos: file.files },
               }
             );
 
