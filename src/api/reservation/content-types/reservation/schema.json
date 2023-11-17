@@ -1,0 +1,76 @@
+{
+  "kind": "collectionType",
+  "collectionName": "reservations",
+  "info": {
+    "singularName": "reservation",
+    "pluralName": "reservations",
+    "displayName": "Reservation",
+    "description": ""
+  },
+  "options": {
+    "draftAndPublish": true
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "address": {
+      "type": "string",
+      "required": true
+    },
+    "client": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "plugin::users-permissions.user",
+      "inversedBy": "reservations"
+    },
+    "pets": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "api::pet.pet",
+      "mappedBy": "reservation"
+    },
+    "reservationDate": {
+      "type": "date",
+      "required": true
+    },
+    "reservationTimeStart": {
+      "type": "time",
+      "required": true
+    },
+    "reservationTimeEnd": {
+      "type": "time",
+      "required": true
+    },
+    "progress": {
+      "type": "enumeration",
+      "enum": [
+        "RESERVATION_REQUEST",
+        "RESERVATION_CONFIRMED",
+        "RESERVATION_CANCELLED",
+        "FINISH_CARING"
+      ],
+      "required": true
+    },
+    "review": {
+      "type": "relation",
+      "relation": "oneToOne",
+      "target": "api::review.review",
+      "inversedBy": "reservation"
+    },
+    "journal": {
+      "type": "relation",
+      "relation": "oneToOne",
+      "target": "api::journal.journal",
+      "mappedBy": "reservation"
+    },
+    "petsitter": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "plugin::users-permissions.user",
+      "inversedBy": "reservations_petsitter"
+    },
+    "body": {
+      "type": "text",
+      "maxLength": 255
+    }
+  }
+}

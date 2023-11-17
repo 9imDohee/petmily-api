@@ -1,0 +1,79 @@
+{
+  "kind": "collectionType",
+  "collectionName": "pets",
+  "info": {
+    "singularName": "pet",
+    "pluralName": "pets",
+    "displayName": "Pet",
+    "description": ""
+  },
+  "options": {
+    "draftAndPublish": true
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "type": {
+      "type": "enumeration",
+      "enum": [
+        "CAT",
+        "DOG"
+      ],
+      "required": true
+    },
+    "name": {
+      "type": "string",
+      "required": true,
+      "maxLength": 5,
+      "minLength": 1
+    },
+    "age": {
+      "type": "integer",
+      "max": 30,
+      "required": true,
+      "min": 0
+    },
+    "species": {
+      "type": "string",
+      "required": true
+    },
+    "weight": {
+      "type": "decimal",
+      "required": true
+    },
+    "body": {
+      "type": "text",
+      "maxLength": 255
+    },
+    "male": {
+      "type": "boolean",
+      "required": true
+    },
+    "neutering": {
+      "type": "boolean",
+      "required": true
+    },
+    "photo": {
+      "type": "media",
+      "multiple": false,
+      "required": false,
+      "allowedTypes": [
+        "images",
+        "files",
+        "videos",
+        "audios"
+      ]
+    },
+    "user": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "plugin::users-permissions.user",
+      "inversedBy": "pets"
+    },
+    "reservation": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "api::reservation.reservation",
+      "inversedBy": "pets"
+    }
+  }
+}
