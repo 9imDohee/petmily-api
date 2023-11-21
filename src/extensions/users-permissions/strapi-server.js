@@ -77,7 +77,7 @@ module.exports = (plugin) => {
           Math.ceil(
             (reviews.results
               .map((review) => review.star)
-              .reduce((acc, cur) => acc + cur) /
+              .reduce((acc, cur) => acc + cur, 0) /
               reviews.results.length) *
               10
           ) / 10,
@@ -263,18 +263,21 @@ module.exports = (plugin) => {
 
       const formattedPetsitterInfo = {
         petsitterId: petsitterInfo.id,
-        possiblePetType: petsitterInfo.possiblePetType || "DOGCAT",
-        possibleLocation: petsitterInfo.possibleLocation
-          ? petsitterInfo.possibleLocation.split(",")
-          : [],
-        possibleDay: petsitterInfo.possibleDay,
-        possibleTimeStart: petsitterInfo.possibleTimeStart,
-        possibleTimeEnd: petsitterInfo.possibleTimeEnd,
+        possiblePetType:
+          petsitterInfo.possiblePetType && petsitterInfo.possiblePetType,
+        possibleLocation:
+          petsitterInfo.possibleLocation &&
+          petsitterInfo.possibleLocation.split(","),
+        possibleDay: petsitterInfo.possibleDay && petsitterInfo.possibleDay,
+        possibleTimeStart:
+          petsitterInfo.possibleTimeStart && petsitterInfo.possibleTimeStart,
+        possibleTimeEnd:
+          petsitterInfo.possibleTimeEnd && petsitterInfo.possibleTimeEnd,
         star:
           Math.ceil(
             (reviews.results
               .map((review) => review.star)
-              .reduce((acc, cur) => acc + cur) /
+              .reduce((acc, cur) => acc + cur, 0) /
               reviews.results.length) *
               10
           ) / 10,
@@ -345,7 +348,7 @@ module.exports = (plugin) => {
           ctx.state.user.id,
           {
             populate: {
-              likes: true,
+              likes: { fields: ["id"] },
             },
           }
         );
@@ -354,26 +357,33 @@ module.exports = (plugin) => {
           (likes) => likes.id === +ctx.params.petsitterId
         );
 
+        console.log(likesIndex);
+
         let isLiked;
 
         if (likesIndex !== -1) {
           // 찜 목록에 있다면 찜 해제
           isLiked = false;
+
+          await strapi.entityService.update(
+            "plugin::users-permissions.user",
+            +ctx.state.user.id,
+            { data: { likes: { disconnect: [+ctx.params.petsitterId] } } }
+          );
         } else {
           // 찜 목록에 없다면 찜하기
           isLiked = true;
-        }
 
-        // 사용자 정보 업데이트
-        await strapi.entityService.update(
-          "plugin::users-permissions.user",
-          +ctx.state.user.id,
-          {
-            data: {
-              likes: [...currentUser.likes, +ctx.params.petsitterId],
-            },
-          }
-        );
+          await strapi.entityService.update(
+            "plugin::users-permissions.user",
+            +ctx.state.user.id,
+            {
+              data: {
+                likes: [+ctx.params.petsitterId],
+              },
+            }
+          );
+        }
 
         ctx.send({ data: isLiked }); // 찜 상태 반환
       } catch (e) {
@@ -423,7 +433,7 @@ module.exports = (plugin) => {
               Math.ceil(
                 (user.reservations_petsitter
                   .map((reservation) => reservation.review.star)
-                  .reduce((acc, cur) => acc + cur) /
+                  .reduce((acc, cur) => acc + cur, 0) /
                   user.reservations_petsitter.length) *
                   10
               ) / 10,

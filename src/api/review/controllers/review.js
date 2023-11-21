@@ -44,12 +44,13 @@ module.exports = createCoreController("api::review.review", ({ strapi }) => ({
             : null,
           reservationId: review.reservation.id,
           reservationAddress: review.reservation.address,
-          petNames: review.reservation.pets
-            ? review.reservation.pets.map((pet) => pet.name)
-            : null,
+          petNames: review.reservation.pets.map((pet) => pet && pet.name),
+          petPhotos: review.reservation.pets.map(
+            (pet) => pet.photo && pet.photo
+          ),
           reviewPhotos: review.photos
-            ? review.photos.map((photo) => photo?.formats?.thumbnail?.url)
-            : null,
+            ? review.photos.map((photo) => photo && photo.formats.thumbnail.url)
+            : [],
           body: review.body,
           petsitterId: review.reservation.petsitter
             ? review.reservation.petsitter.id
@@ -105,7 +106,6 @@ module.exports = createCoreController("api::review.review", ({ strapi }) => ({
         );
 
         const modifiedReviews = reviews.map((review) => ({
-          // ...review,
           reviewId: review.id,
           memberId: review.reservation.client
             ? review.reservation.client.id
@@ -118,12 +118,13 @@ module.exports = createCoreController("api::review.review", ({ strapi }) => ({
             : null,
           reservationId: review.reservation.id,
           reservationAddress: review.reservation.address,
-          petNames: review.reservation.pets
-            ? review.reservation.pets.map((pet) => pet.name)
-            : null,
+          petNames: review.reservation.pets.map((pet) => pet && pet.name),
+          petPhotos: review.reservation.pets.map(
+            (pet) => pet.photo && pet.photo
+          ),
           reviewPhotos: review.photos
-            ? review.photos.map((photo) => photo?.formats?.thumbnail?.url)
-            : null,
+            ? review.photos.map((photo) => photo && photo.formats.thumbnail.url)
+            : [],
           body: review.body,
           petsitterId: review.reservation.petsitter
             ? review.reservation.petsitter.id
@@ -164,8 +165,6 @@ module.exports = createCoreController("api::review.review", ({ strapi }) => ({
           },
         }
       );
-
-      console.log(review);
 
       const modifiedReview = {
         reviewId: review.id,
@@ -236,19 +235,21 @@ module.exports = createCoreController("api::review.review", ({ strapi }) => ({
     ) {
       const files = ctx.request.files;
 
+      let data = {
+        data: { body, star, reservation: reservationId },
+      };
+
+      if (Object.keys(files).length !== 0) {
+        data = {
+          data: { body, star, reservation: reservationId },
+          files: { photos: files.file },
+        };
+      }
+
       try {
         const newReview = await strapi.entityService.create(
           "api::review.review",
-          {
-            data: {
-              body,
-              star,
-              reservation: reservationId,
-            },
-            files: {
-              photos: files.file,
-            },
-          }
+          data
         );
         ctx.send("Create Review Success");
       } catch (e) {
@@ -260,7 +261,7 @@ module.exports = createCoreController("api::review.review", ({ strapi }) => ({
   },
 
   async update(ctx) {
-    const reviewId = +ctx.request.params.id;
+    const reviewId = ctx.params.id;
     const { reservationId, body, star } = JSON.parse(ctx.request.body.data);
     const files = ctx.request.files;
 
@@ -282,20 +283,23 @@ module.exports = createCoreController("api::review.review", ({ strapi }) => ({
     } else if (
       ctx.state.user.id === reservation.client.id &&
       reservation.review &&
-      reservation.review.id === reviewId
+      reservation.review.id === +reviewId
     ) {
+      let data = {
+        data: { body, star, reservation: reservationId },
+      };
+
+      if (Object.keys(files).length !== 0) {
+        data = {
+          data: { body, star, reservation: reservationId },
+          files: { photos: files.file },
+        };
+      }
       try {
         const updatedReview = await strapi.entityService.update(
           "api::review.review",
           reviewId,
-          {
-            data: {
-              body,
-              star,
-              reservation: reservationId,
-            },
-            files: { photos: files.files },
-          }
+          data
         );
         ctx.send("Update Review Success");
       } catch (e) {
