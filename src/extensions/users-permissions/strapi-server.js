@@ -114,17 +114,27 @@ module.exports = (plugin) => {
 
   // 회원정보 수정
   plugin.controllers.user.update = async (ctx) => {
-    if (!ctx.state.user || ctx.state.user.role.type !== "public") {
+    if (!ctx.state.user) {
       return ctx.badRequest("권한이 없습니다.");
     } else if (ctx.state.user.id === +ctx.params.id) {
+      const { nickName, address, phone, body } = ctx.request.body.data;
+      const files = ctx.request.files;
+
+      let data = {
+        data: { nickName, address, phone, body },
+      };
+      if (Object.keys(files).length !== 0) {
+        data = {
+          data: { nickName, address, phone, body },
+          files: {
+            photo: files.file,
+          },
+        };
+      }
       const updatedUser = await strapi.entityService.update(
         "plugin::users-permissions.user",
         ctx.state.user.id,
-        {
-          data: {
-            ...ctx.request.body,
-          },
-        }
+        data
       );
       ctx.send({ data: "success modify member" });
     }
