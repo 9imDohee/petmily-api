@@ -117,7 +117,9 @@ module.exports = (plugin) => {
     if (!ctx.state.user) {
       return ctx.badRequest("권한이 없습니다.");
     } else if (ctx.state.user.id === +ctx.params.id) {
-      const { nickName, address, phone, body } = ctx.request.body.data;
+      const { nickName, address, phone, body } = JSON.parse(
+        ctx.request.body.data
+      );
       const files = ctx.request.files;
 
       let data = {
@@ -131,12 +133,16 @@ module.exports = (plugin) => {
           },
         };
       }
-      const updatedUser = await strapi.entityService.update(
-        "plugin::users-permissions.user",
-        ctx.state.user.id,
-        data
-      );
-      ctx.send({ data: "success modify member" });
+      try {
+        const updatedUser = await strapi.entityService.update(
+          "plugin::users-permissions.user",
+          ctx.state.user.id,
+          data
+        );
+        ctx.send({ data: "success modify member" });
+      } catch (e) {
+        console.log(e);
+      }
     }
   };
 

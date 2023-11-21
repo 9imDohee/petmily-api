@@ -611,7 +611,7 @@
       }
     }
   },
-  "/reservations/schedule/{id}": {
+  "/reservations/schedule/{petsitterId}": {
     "get": {
       "responses": {
         "200": {
@@ -680,7 +680,7 @@
       ],
       "parameters": [
         {
-          "name": "id",
+          "name": "petsitterId",
           "in": "path",
           "description": "",
           "deprecated": false,
@@ -690,7 +690,7 @@
           }
         }
       ],
-      "operationId": "get/reservations/schedule/{id}"
+      "operationId": "get/reservations/schedule/{petsitterId}"
     }
   }
 }

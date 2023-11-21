@@ -466,7 +466,6 @@ module.exports = createCoreController(
               },
             }
           );
-
           ctx.send(petsitters);
         } catch (e) {}
       }

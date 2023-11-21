@@ -42,10 +42,10 @@ module.exports = {
       path: "/reservations/petsitters",
       handler: "reservation.findPossiblePetsitter",
     },
-    // 펫시터 예약일정 조회
+    // 펫시터  예약일정 조회
     {
       method: "GET",
-      path: "/reservations/schedule/:id",
+      path: "/reservations/schedule/:petsitterId",
       handler: "reservation.sitterSchedule",
     },
   ],
