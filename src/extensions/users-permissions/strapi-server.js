@@ -553,5 +553,15 @@ module.exports = (plugin) => {
     },
   });
 
+  // 펫시터 찜하기 조회
+  plugin.routes["content-api"].routes.push({
+    method: "GET",
+    path: "/members/favorite/:petsitterId",
+    handler: "user.like",
+    config: {
+      prefix: "",
+    },
+  });
+
   return plugin;
 };
