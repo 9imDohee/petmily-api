@@ -198,7 +198,7 @@ module.exports = createCoreController("api::review.review", ({ strapi }) => ({
         lastModifiedAt: review.updatedAt,
       };
 
-      ctx.send({ reviews: modifiedReview });
+      ctx.send(modifiedReview);
     } catch (e) {
       console.log(e);
     }
