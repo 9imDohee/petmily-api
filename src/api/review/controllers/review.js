@@ -113,8 +113,8 @@ module.exports = createCoreController("api::review.review", ({ strapi }) => ({
           memberNickName: review.reservation.client
             ? review.reservation.client.nickName
             : null,
-          memberPhoto: review.reservation.client
-            ? review.reservation.client.photo
+          memberPhoto: review.reservation.client.photo
+            ? review.reservation.client.photo.formats.thumbnail.url
             : null,
           reservationId: review.reservation.id,
           reservationAddress: review.reservation.address,
