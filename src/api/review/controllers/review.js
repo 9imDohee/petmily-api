@@ -40,7 +40,7 @@ module.exports = createCoreController("api::review.review", ({ strapi }) => ({
             ? review.reservation.client.nickName
             : null,
           memberPhoto: review.reservation.client.photo
-            ? review.reservation.client.photo.formats.url
+            ? review.reservation.client.photo.formats.thumbnail.url
             : null,
           reservationId: review.reservation.id,
           reservationAddress: review.reservation.address,
@@ -82,7 +82,7 @@ module.exports = createCoreController("api::review.review", ({ strapi }) => ({
           };
         }
 
-        const reviews = await strapi.entityService.findMany(
+        const reviews = await strapi.entityService.findPage(
           "api::review.review",
           {
             sort: { id: "desc" },
@@ -100,12 +100,12 @@ module.exports = createCoreController("api::review.review", ({ strapi }) => ({
               },
             },
             filters,
-            start: (+ctx.request.query.page - 1) * +ctx.request.query.size || 0,
-            limit: +ctx.request.query.page * +ctx.request.query.size || 0,
+            page: +ctx.request.query.page,
+            pageSize: +ctx.request.query.size,
           }
         );
 
-        const modifiedReviews = reviews.map((review) => ({
+        const modifiedReviews = reviews.results.map((review) => ({
           reviewId: review.id,
           memberId: review.reservation.client
             ? review.reservation.client.id
@@ -140,7 +140,14 @@ module.exports = createCoreController("api::review.review", ({ strapi }) => ({
           lastModifiedAt: review.updatedAt,
         }));
 
-        ctx.send({ reviews: modifiedReviews });
+        const pageInfo = {
+          page: reviews.pagination.page,
+          size: reviews.pagination.pageSize,
+          totalElements: reviews.pagination.total,
+          totalPage: reviews.pagination.pageCount,
+        };
+
+        ctx.send({ reviews: modifiedReviews, pageInfo });
       } catch (e) {
         console.log(e);
       }
