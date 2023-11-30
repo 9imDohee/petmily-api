@@ -62,7 +62,7 @@ module.exports = createCoreController(
                 populate: { role: true, photo: true },
               },
               client: {
-                fields: ["phone"],
+                populate: { role: true, photo: true },
               },
             },
             page: +ctx.request.query.page,
@@ -70,45 +70,81 @@ module.exports = createCoreController(
           }
         );
 
-        const modifiedReservations = reservations.results.map(
-          (reservation) => ({
-            reservationId: reservation.id,
-            reservationDate: reservation.reservationDate,
-            reservationTimeStart: reservation.reservationTimeStart,
-            reservationTimeEnd: reservation.reservationTimeEnd,
-            address: reservation.address,
-            reservationPhone: reservation.client.phone,
-            reservationBody: reservation.body,
-            progress: reservation.progress,
-            petsitterId: reservation.petsitter.role.id,
-            petsitterName: reservation.petsitter.username,
-            petsitterNickName: reservation.petsitter.nickName,
-            petsitterPhone: reservation.petsitter.phone,
-            petsitterPhoto:
-              reservation.petsitter &&
-              reservation.petsitter.photo &&
-              reservation.petsitter.photo.formats &&
-              reservation.petsitter.photo.formats.thumbnail
-                ? reservation.petsitter.photo.formats.thumbnail.url
+        if (type === "public") {
+          const modifiedReservations = reservations.results.map(
+            (reservation) => ({
+              reservationId: reservation.id,
+              reservationDate: reservation.reservationDate,
+              reservationTimeStart: reservation.reservationTimeStart,
+              reservationTimeEnd: reservation.reservationTimeEnd,
+              address: reservation.address,
+              reservationPhone: reservation.client.phone,
+              reservationBody: reservation.body,
+              progress: reservation.progress,
+              petsitterId: reservation.petsitter.id,
+              petsitterName: reservation.petsitter.username,
+              petsitterNickName: reservation.petsitter.nickName,
+              petsitterPhone: reservation.petsitter.phone,
+              petsitterPhoto:
+                reservation.petsitter &&
+                reservation.petsitter.photo &&
+                reservation.petsitter.photo.formats &&
+                reservation.petsitter.photo.formats.thumbnail
+                  ? reservation.petsitter.photo.formats.thumbnail.url
+                  : null,
+              pets: reservation.pets
+                ? reservation.pets.map((pets) => ({
+                    petId: pets.id,
+                    name: pets.name,
+                  }))
                 : null,
-            pets: reservation.pets
-              ? reservation.pets.map((pets) => ({
-                  petId: pets.id,
-                  name: pets.name,
-                }))
-              : null,
-            journalId: reservation.journalId ? reservation.journalId : null,
-          })
-        );
+              journalId: reservation.journalId ? reservation.journalId : null,
+            })
+          );
+          const pageInfo = {
+            page: reservations.pagination.page,
+            size: reservations.pagination.pageSize,
+            totalElements: reservations.pagination.total,
+            totalPages: reservations.pagination.pageCount,
+          };
 
-        const pageInfo = {
-          page: reservations.pagination.page,
-          size: reservations.pagination.pageSize,
-          totalElements: reservations.pagination.total,
-          totalPages: reservations.pagination.pageCount,
-        };
+          ctx.send({ reservations: modifiedReservations, pageInfo });
+        } else if (type === "petsitter") {
+          const modifiedReservations = reservations.results.map(
+            (reservation) => ({
+              reservationId: reservation.id,
+              reservationDate: reservation.reservationDate,
+              reservationTimeStart: reservation.reservationTimeStart,
+              reservationTimeEnd: reservation.reservationTimeEnd,
+              address: reservation.address,
+              reservationPhone: reservation.client.phone,
+              reservationBody: reservation.body,
+              progress: reservation.progress,
+              memberId: reservation.client.id,
+              memberName: reservation.client.username,
+              memberNickName: reservation.client.nickName,
+              memberPhone: reservation.client.phone,
+              memberPhoto:
+                reservation.client.photo &&
+                reservation.client.photo.formats.thumbnail.url,
+              pets: reservation.pets
+                ? reservation.pets.map((pets) => ({
+                    petId: pets.id,
+                    name: pets.name,
+                  }))
+                : null,
+              journalId: reservation.journalId ? reservation.journalId : null,
+            })
+          );
+          const pageInfo = {
+            page: reservations.pagination.page,
+            size: reservations.pagination.pageSize,
+            totalElements: reservations.pagination.total,
+            totalPages: reservations.pagination.pageCount,
+          };
 
-        ctx.send({ reservations: modifiedReservations, pageInfo });
+          ctx.send({ reservations: modifiedReservations, pageInfo });
+        }
       } catch (e) {
         console.log(e);
       }
