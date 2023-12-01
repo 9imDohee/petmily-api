@@ -144,7 +144,7 @@ module.exports = createCoreController("api::review.review", ({ strapi }) => ({
           page: reviews.pagination.page,
           size: reviews.pagination.pageSize,
           totalElements: reviews.pagination.total,
-          totalPage: reviews.pagination.pageCount,
+          totalPages: reviews.pagination.pageCount,
         };
 
         ctx.send({ reviews: modifiedReviews, pageInfo });
