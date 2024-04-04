@@ -77,34 +77,64 @@
       "type": "text",
       "required": true
     },
+    "photo": {
+      "type": "media",
+      "multiple": false,
+      "required": false,
+      "allowedTypes": ["images", "files", "videos", "audios"]
+    },
     "pets": {
       "type": "relation",
       "relation": "oneToMany",
       "target": "api::pet.pet",
       "mappedBy": "user"
     },
-    "journals": {
-      "type": "relation",
-      "relation": "oneToMany",
-      "target": "api::journal.journal",
-      "mappedBy": "user"
-    },
-    "reviews": {
-      "type": "relation",
-      "relation": "oneToMany",
-      "target": "api::review.review",
-      "mappedBy": "user"
-    },
     "reservations": {
       "type": "relation",
       "relation": "oneToMany",
       "target": "api::reservation.reservation",
-      "mappedBy": "user"
+      "mappedBy": "client"
     },
-    "photo": {
-      "allowedTypes": ["images", "files", "videos", "audios"],
-      "type": "media",
-      "multiple": false
+    "reservation_petsitter": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "api::reservation.reservation",
+      "mappedBy": "petsitter"
+    },
+    "body": {
+      "type": "text"
+    },
+    "reviewCount": {
+      "type": "integer",
+      "min": 0
+    },
+    "possibleDay": {
+      "type": "string"
+    },
+    "possibleTimeStart": {
+      "type": "time"
+    },
+    "possibleTimeEnd": {
+      "type": "time"
+    },
+    "possiblePetType": {
+      "type": "enumeration",
+      "enum": ["CAT", "DOG", "DOGCAT"]
+    },
+    "possibleLocation": {
+      "type": "string"
+    },
+    "likes": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "plugin::users-permissions.user",
+      "mappedBy": "liked"
+    },
+    "liked": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "plugin::users-permissions.user",
+      "inversedBy": "likes"
     }
   }
 }

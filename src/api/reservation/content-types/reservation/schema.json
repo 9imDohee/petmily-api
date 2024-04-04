@@ -12,20 +12,29 @@
   },
   "pluginOptions": {},
   "attributes": {
-    "reservationDay": {
-      "type": "date",
-      "required": true
-    },
-    "reservationTimeStart": {
-      "type": "time",
-      "required": true
-    },
-    "reservationTimeEnd": {
-      "type": "time",
-      "required": true
-    },
     "address": {
       "type": "string"
+    },
+    "client": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "plugin::users-permissions.user",
+      "inversedBy": "reservations"
+    },
+    "pets": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "api::pet.pet",
+      "mappedBy": "reservation"
+    },
+    "reservationDate": {
+      "type": "date"
+    },
+    "reservationTimeStart": {
+      "type": "time"
+    },
+    "reservationTimeEnd": {
+      "type": "time"
     },
     "progress": {
       "type": "enumeration",
@@ -34,32 +43,28 @@
         "RESERVATION_CONFIRMED",
         "RESERVATION_CANCELLED",
         "FINISH_CARING"
-      ],
-      "required": true
-    },
-    "journal": {
-      "type": "relation",
-      "relation": "oneToOne",
-      "target": "api::journal.journal",
-      "inversedBy": "reservation"
-    },
-    "user": {
-      "type": "relation",
-      "relation": "manyToOne",
-      "target": "plugin::users-permissions.user",
-      "inversedBy": "reservations"
+      ]
     },
     "review": {
       "type": "relation",
       "relation": "oneToOne",
       "target": "api::review.review",
+      "inversedBy": "reservation"
+    },
+    "journal": {
+      "type": "relation",
+      "relation": "oneToOne",
+      "target": "api::journal.journal",
       "mappedBy": "reservation"
     },
-    "pets": {
+    "petsitter": {
       "type": "relation",
-      "relation": "oneToMany",
-      "target": "api::pet.pet",
-      "mappedBy": "reservation"
+      "relation": "manyToOne",
+      "target": "plugin::users-permissions.user",
+      "inversedBy": "reservation_petsitter"
+    },
+    "body": {
+      "type": "text"
     }
   }
 }
