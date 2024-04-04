@@ -411,17 +411,28 @@ export interface ApiPetPet extends Schema.CollectionType {
     draftAndPublish: true;
   };
   attributes: {
-    type: Attribute.Enumeration<["CAT", "DOG"]> &
+    type: Attribute.Enumeration<["CAT", "DOG"]> & Attribute.Required;
+    name: Attribute.String &
       Attribute.Required &
-      Attribute.Private;
-    name: Attribute.String;
-    age: Attribute.Integer;
-    species: Attribute.String;
-    weight: Attribute.Decimal;
-    body: Attribute.Text;
-    male: Attribute.Boolean;
-    neutering: Attribute.Boolean;
-    file: Attribute.Media;
+      Attribute.SetMinMaxLength<{
+        minLength: 1;
+        maxLength: 5;
+      }>;
+    age: Attribute.Integer &
+      Attribute.Required &
+      Attribute.SetMinMax<{
+        min: 0;
+        max: 30;
+      }>;
+    species: Attribute.String & Attribute.Required;
+    weight: Attribute.Decimal & Attribute.Required;
+    body: Attribute.Text &
+      Attribute.SetMinMaxLength<{
+        maxLength: 255;
+      }>;
+    male: Attribute.Boolean & Attribute.Required;
+    neutering: Attribute.Boolean & Attribute.Required;
+    photo: Attribute.Media;
     user: Attribute.Relation<
       "api::pet.pet",
       "manyToOne",
@@ -454,7 +465,7 @@ export interface ApiReservationReservation extends Schema.CollectionType {
     draftAndPublish: true;
   };
   attributes: {
-    address: Attribute.String;
+    address: Attribute.String & Attribute.Required;
     client: Attribute.Relation<
       "api::reservation.reservation",
       "manyToOne",
@@ -465,9 +476,9 @@ export interface ApiReservationReservation extends Schema.CollectionType {
       "oneToMany",
       "api::pet.pet"
     >;
-    reservationDate: Attribute.Date;
-    reservationTimeStart: Attribute.Time;
-    reservationTimeEnd: Attribute.Time;
+    reservationDate: Attribute.Date & Attribute.Required;
+    reservationTimeStart: Attribute.Time & Attribute.Required;
+    reservationTimeEnd: Attribute.Time & Attribute.Required;
     progress: Attribute.Enumeration<
       [
         "RESERVATION_REQUEST",
@@ -475,7 +486,8 @@ export interface ApiReservationReservation extends Schema.CollectionType {
         "RESERVATION_CANCELLED",
         "FINISH_CARING"
       ]
-    >;
+    > &
+      Attribute.Required;
     review: Attribute.Relation<
       "api::reservation.reservation",
       "oneToOne",
@@ -491,7 +503,10 @@ export interface ApiReservationReservation extends Schema.CollectionType {
       "manyToOne",
       "plugin::users-permissions.user"
     >;
-    body: Attribute.Text;
+    body: Attribute.Text &
+      Attribute.SetMinMaxLength<{
+        maxLength: 255;
+      }>;
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;
     publishedAt: Attribute.DateTime;
@@ -522,8 +537,12 @@ export interface ApiReviewReview extends Schema.CollectionType {
     draftAndPublish: true;
   };
   attributes: {
-    body: Attribute.Text;
+    body: Attribute.Text &
+      Attribute.SetMinMaxLength<{
+        maxLength: 500;
+      }>;
     star: Attribute.Integer &
+      Attribute.Required &
       Attribute.SetMinMax<{
         min: 0;
         max: 5;
@@ -849,8 +868,12 @@ export interface PluginUsersPermissionsUser extends Schema.CollectionType {
       "manyToOne",
       "plugin::users-permissions.role"
     >;
-    nickName: Attribute.String & Attribute.Required;
-    phone: Attribute.BigInteger & Attribute.Required;
+    nickName: Attribute.String &
+      Attribute.Required &
+      Attribute.SetMinMaxLength<{
+        minLength: 2;
+        maxLength: 10;
+      }>;
     address: Attribute.Text & Attribute.Required;
     photo: Attribute.Media;
     pets: Attribute.Relation<
@@ -863,17 +886,14 @@ export interface PluginUsersPermissionsUser extends Schema.CollectionType {
       "oneToMany",
       "api::reservation.reservation"
     >;
-    reservation_petsitter: Attribute.Relation<
-      "plugin::users-permissions.user",
-      "oneToMany",
-      "api::reservation.reservation"
-    >;
-    body: Attribute.Text;
-    reviewCount: Attribute.Integer &
-      Attribute.SetMinMax<{
-        min: 0;
+    body: Attribute.Text &
+      Attribute.SetMinMaxLength<{
+        maxLength: 255;
       }>;
-    possibleDay: Attribute.String;
+    possibleDay: Attribute.String &
+      Attribute.SetMinMaxLength<{
+        maxLength: 5;
+      }>;
     possibleTimeStart: Attribute.Time;
     possibleTimeEnd: Attribute.Time;
     possiblePetType: Attribute.Enumeration<["CAT", "DOG", "DOGCAT"]>;
@@ -888,6 +908,12 @@ export interface PluginUsersPermissionsUser extends Schema.CollectionType {
       "manyToOne",
       "plugin::users-permissions.user"
     >;
+    reservations_petsitter: Attribute.Relation<
+      "plugin::users-permissions.user",
+      "oneToMany",
+      "api::reservation.reservation"
+    >;
+    phone: Attribute.String & Attribute.Required;
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;
     createdBy: Attribute.Relation<

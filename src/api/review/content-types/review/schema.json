@@ -13,12 +13,14 @@
   "pluginOptions": {},
   "attributes": {
     "body": {
-      "type": "text"
+      "type": "text",
+      "maxLength": 500
     },
     "star": {
       "type": "integer",
       "max": 5,
-      "min": 0
+      "min": 0,
+      "required": true
     },
     "reservation": {
       "type": "relation",

@@ -1,5 +1,5 @@
 {
-  "name": "server",
+  "name": "petmilys",
   "private": true,
   "version": "0.1.0",
   "description": "A Strapi application",
@@ -10,20 +10,26 @@
     "strapi": "strapi"
   },
   "dependencies": {
-    "@strapi/plugin-documentation": "^4.15.0",
-    "@strapi/plugin-i18n": "4.14.5",
-    "@strapi/plugin-users-permissions": "4.14.5",
-    "@strapi/strapi": "4.14.5",
-    "pg": "8.8.0"
+    "@strapi/plugin-cloud": "4.15.4",
+    "@strapi/plugin-documentation": "^4.15.4",
+    "@strapi/plugin-i18n": "4.15.4",
+    "@strapi/plugin-users-permissions": "4.15.4",
+    "@strapi/strapi": "4.15.4",
+    "better-sqlite3": "8.6.0",
+    "pg": "^8.11.3",
+    "react": "^18.0.0",
+    "react-dom": "^18.0.0",
+    "react-router-dom": "5.3.4",
+    "styled-components": "5.3.3"
   },
   "author": {
     "name": "A Strapi developer"
   },
   "strapi": {
-    "uuid": "c99c8aca-d526-42ed-b561-c964a274f0b4"
+    "uuid": "a8fb0652-6fcb-4fa6-b93e-c09f7ec8d010"
   },
   "engines": {
-    "node": ">=16.0.0 <=20.x.x",
+    "node": ">=18.0.0 <=20.x.x",
     "npm": ">=6.0.0"
   },
   "license": "MIT"

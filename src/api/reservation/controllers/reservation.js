@@ -12,37 +12,188 @@ const { createCoreController } = require("@strapi/strapi").factories;
 module.exports = createCoreController(
   "api::reservation.reservation",
   ({ strapi }) => ({
-    // 예약 1개 조회
+    // 멤버, 펫시터 예약 조회
+    async find(ctx) {
+      const { id: userId } = ctx.state.user;
+      const { type } = ctx.state.user.role;
+
+      let filters = {};
+      if (type === "public") {
+        filters.client = { id: { $eq: userId } };
+        filters.progress = {
+          $in:
+            ctx.request.query.condition === "expected"
+              ? ["RESERVATION_REQUEST", "RESERVATION_CONFIRMED"]
+              : ctx.request.query.condition === "finish"
+              ? ["RESERVATION_CANCELLED", "FINISH_CARING"]
+              : [
+                  "RESERVATION_REQUEST",
+                  "RESERVATION_CONFIRMED",
+                  "RESERVATION_CANCELLED",
+                  "FINISH_CARING",
+                ],
+        };
+      } else if (type === "petsitter") {
+        filters.petsitter = { id: { $eq: userId } };
+        filters.progress = {
+          $in:
+            ctx.request.query.condition === "expected"
+              ? ["RESERVATION_REQUEST", "RESERVATION_CONFIRMED"]
+              : ctx.request.query.condition === "finish"
+              ? ["RESERVATION_CANCELLED", "FINISH_CARING"]
+              : [
+                  "RESERVATION_REQUEST",
+                  "RESERVATION_CONFIRMED",
+                  "RESERVATION_CANCELLED",
+                  "FINISH_CARING",
+                ],
+        };
+      }
+
+      try {
+        const reservations = await strapi.entityService.findPage(
+          "api::reservation.reservation",
+          {
+            sort: { id: "desc" },
+            filters,
+            populate: {
+              pets: true,
+              petsitter: {
+                populate: { role: true, photo: true },
+              },
+              client: {
+                populate: { role: true, photo: true },
+              },
+            },
+            page: +ctx.request.query.page,
+            pageSize: +ctx.request.query.size,
+          }
+        );
+
+        if (type === "public") {
+          const modifiedReservations = reservations.results.map(
+            (reservation) => ({
+              reservationId: reservation.id,
+              reservationDate: reservation.reservationDate,
+              reservationTimeStart: reservation.reservationTimeStart,
+              reservationTimeEnd: reservation.reservationTimeEnd,
+              address: reservation.address,
+              reservationPhone: reservation.client.phone,
+              reservationBody: reservation.body,
+              progress: reservation.progress,
+              petsitterId: reservation.petsitter.id,
+              petsitterName: reservation.petsitter.username,
+              petsitterNickName: reservation.petsitter.nickName,
+              petsitterPhone: reservation.petsitter.phone,
+              petsitterPhoto:
+                reservation.petsitter &&
+                reservation.petsitter.photo &&
+                reservation.petsitter.photo.formats &&
+                reservation.petsitter.photo.formats.thumbnail
+                  ? reservation.petsitter.photo.formats.thumbnail.url
+                  : null,
+              pets: reservation.pets
+                ? reservation.pets.map((pets) => ({
+                    petId: pets.id,
+                    name: pets.name,
+                  }))
+                : null,
+              journalId: reservation.journalId ? reservation.journalId : null,
+            })
+          );
+          const pageInfo = {
+            page: reservations.pagination.page,
+            size: reservations.pagination.pageSize,
+            totalElements: reservations.pagination.total,
+            totalPages: reservations.pagination.pageCount,
+          };
+
+          ctx.send({ reservations: modifiedReservations, pageInfo });
+        } else if (type === "petsitter") {
+          const modifiedReservations = reservations.results.map(
+            (reservation) => ({
+              reservationId: reservation.id,
+              reservationDate: reservation.reservationDate,
+              reservationTimeStart: reservation.reservationTimeStart,
+              reservationTimeEnd: reservation.reservationTimeEnd,
+              address: reservation.address,
+              reservationPhone: reservation.client.phone,
+              reservationBody: reservation.body,
+              progress: reservation.progress,
+              memberId: reservation.client.id,
+              memberName: reservation.client.username,
+              memberNickName: reservation.client.nickName,
+              memberPhone: reservation.client.phone,
+              memberPhoto:
+                reservation.client.photo &&
+                reservation.client.photo.formats.thumbnail.url,
+              pets: reservation.pets
+                ? reservation.pets.map((pets) => ({
+                    petId: pets.id,
+                    name: pets.name,
+                  }))
+                : null,
+              journalId: reservation.journalId ? reservation.journalId : null,
+            })
+          );
+          const pageInfo = {
+            page: reservations.pagination.page,
+            size: reservations.pagination.pageSize,
+            totalElements: reservations.pagination.total,
+            totalPages: reservations.pagination.pageCount,
+          };
+
+          ctx.send({ reservations: modifiedReservations, pageInfo });
+        }
+      } catch (e) {
+        console.log(e);
+      }
+    },
+
+    // 예약 1개 조회 v
     async findOne(ctx) {
       if (!ctx.state.user) {
         ctx.send("에러");
       } else {
         try {
           const userId = ctx.state.user.id;
-
           const { id } = ctx.params;
+
           const reservation = await strapi.entityService.findOne(
             "api::reservation.reservation",
             id,
             {
               populate: {
                 client: {
+                  fields: ["username", "nickName", "body"],
                   populate: {
                     photo: true,
                   },
                 },
                 petsitter: {
+                  fields: ["username", "nickName", "phone", "body"],
                   populate: {
                     photo: true,
                   },
                 },
                 pets: {
+                  fields: [
+                    "type",
+                    "name",
+                    "age",
+                    "species",
+                    "weight",
+                    "male",
+                    "neutering",
+                    "body",
+                    ,
+                  ],
                   populate: {
-                    file: true,
+                    photo: true,
                   },
                 },
-                review: true,
-                journal: true,
+                review: { fields: ["id"] },
+                journal: { fields: ["id"] },
               },
             }
           );
@@ -51,12 +202,9 @@ module.exports = createCoreController(
             userId === reservation.client.id ||
             userId === reservation.petsitter.id
           ) {
-            const petNames = reservation.pets.map((pet) => pet.name);
-            const petPhotos = reservation.pets.map((pet) => pet.file);
-
             const response = {
               reservationId: reservation.id,
-              reservationDay: reservation.reservationDate,
+              reservationDate: reservation.reservationDate,
               reservationTimeStart: reservation.reservationTimeStart,
               reservationTimeEnd: reservation.reservationTimeEnd,
               address: reservation.address,
@@ -68,25 +216,25 @@ module.exports = createCoreController(
                 name: reservation.client.username,
                 nickName: reservation.client.nickName,
                 body: reservation.client.body,
-                // photo: reservation.client.photo.formats.thumbnail.url,
+                photo:
+                  reservation.client.photo &&
+                  reservation.client.photo.formats.thumbnail.url,
               },
               petsitter: {
                 petsitterId: reservation.petsitter.id,
                 name: reservation.petsitter.username,
                 nickName: reservation.petsitter.nickName,
-                body: reservation.client.body,
-                // photo: reservation.petsitter.photo.formats.thumbnail.url,
+                body: reservation.petsitter.body,
+                photo:
+                  reservation.petsitter.photo &&
+                  reservation.petsitter.photo.formats.thumbnail.url,
               },
               pets: reservation.pets,
-              reviewId: reservation.review ? reservation.review.id : null,
-              journalId: reservation.journal.id,
+              reviewId: reservation.review && reservation.review.id,
+              journalId: reservation.journal && reservation.journal.id,
             };
 
-            delete response.client;
-
             ctx.send(response);
-          } else {
-            console.log("예약에 해당하는 유저가 아닙니다.");
           }
         } catch (e) {
           console.log(e);
@@ -94,44 +242,68 @@ module.exports = createCoreController(
       }
     },
 
-    //펫시터 예약 확정
+    // 예약 생성 v
+    async create(ctx) {
+      if (!ctx.state.user) {
+        ctx.badRequest("로그인을 해주세요");
+      } else {
+        try {
+          const data = ctx.request.body;
+
+          const reservation = await strapi.entityService.create(
+            "api::reservation.reservation",
+            {
+              data: {
+                ...data,
+                pets: data.petId,
+                petsitter: data.petsitterId,
+                client: ctx.state.user.id,
+                progress: "RESERVATION_REQUEST",
+              },
+            }
+          );
+
+          return (ctx.body = "Create Reservation Success");
+        } catch (e) {
+          console.error(e);
+          return ctx.badRequest("Reservation 생성 실패");
+        }
+      }
+    },
+
+    //펫시터 예약 확정 v
     async confirmReservation(ctx) {
       if (!ctx.state.user) {
         ctx.send("에러");
       } else {
         try {
           const userId = ctx.state.user.id;
-          console.log(userId);
-
           const reservationId = +ctx.params.reservationId;
-          console.log(reservationId);
 
           const reservation = await strapi.entityService.findOne(
             "api::reservation.reservation",
             reservationId,
             {
               populate: {
-                petsitter: true,
+                petsitter: { fields: ["id"] },
               },
             }
           );
-          console.log(reservation);
 
           if (
             userId === reservation.petsitter.id &&
             reservation.progress === "RESERVATION_REQUEST"
           ) {
             try {
-              // console.log(ctx.request.body);
-
               const response = await strapi.entityService.update(
                 "api::reservation.reservation",
                 reservationId,
-                { data: { ...reservation, progress: "RESERVATION_CONFIRMED" } }
+                { data: { progress: "RESERVATION_CONFIRMED" } }
               );
 
               ctx.send("ok");
             } catch (e) {
+              ctx.badRequest("예약 확정에 실패하였습니다.");
               console.log(e);
             }
           }
@@ -141,14 +313,13 @@ module.exports = createCoreController(
       }
     },
 
-    // 펫시터 예약 취소
+    // 펫시터 예약 취소 v
     async petsitterCancel(ctx) {
       if (!ctx.state.user) {
         ctx.send("에러");
       } else {
         try {
           const userId = ctx.state.user.id;
-
           const reservationId = +ctx.params.reservationId;
 
           const reservation = await strapi.entityService.findOne(
@@ -156,7 +327,7 @@ module.exports = createCoreController(
             reservationId,
             {
               populate: {
-                petsitter: true,
+                petsitter: { fields: ["id"] },
               },
             }
           );
@@ -169,33 +340,33 @@ module.exports = createCoreController(
               const response = await strapi.entityService.update(
                 "api::reservation.reservation",
                 reservationId,
-                { data: { ...reservation, progress: "RESERVATION_CANCELLED" } }
+                { data: { progress: "RESERVATION_CANCELLED" } }
               );
 
               ctx.send("cancelled");
-            } catch (e) {}
+            } catch (e) {
+              ctx.badRequest("예약 취소에 실패했습니다.");
+            }
           }
         } catch (e) {}
       }
     },
 
-    // 멤버 예약 취소
+    // 멤버 예약 취소 v
     async memberCancel(ctx) {
       if (!ctx.state.user) {
         ctx.send("에러");
       } else {
         try {
           const userId = ctx.state.user.id;
-
           const reservationId = +ctx.params.reservationId;
-          console.log(reservationId);
 
           const reservation = await strapi.entityService.findOne(
             "api::reservation.reservation",
             reservationId,
             {
               populate: {
-                client: true,
+                client: { fields: ["id"] },
               },
             }
           );
@@ -208,11 +379,12 @@ module.exports = createCoreController(
               const response = await strapi.entityService.update(
                 "api::reservation.reservation",
                 reservationId,
-                { data: { ...reservation, progress: "RESERVATION_CANCELLED" } }
+                { data: { progress: "RESERVATION_CANCELLED" } }
               );
               ctx.send("cancelled");
             } catch (e) {
               console.log(e);
+              ctx.badRequest("예약 취소에 실패했습니다.");
             }
           }
         } catch (e) {
@@ -221,323 +393,129 @@ module.exports = createCoreController(
       }
     },
 
-    async create(ctx) {
-      // 예약 생성
-      try {
-        const data = JSON.parse(ctx.request.body.data);
-        const reservation = await strapi.entityService.create(
-          "api::reservation.reservation",
-          {
-            data: {
-              reservationBody: data.body,
-              reservationDay: data.reservationDate,
-              reservationTimeStart: data.reservationTimeStart,
-              reservationTimeEnd: data.reservationTimeEnd,
-              address: data.address,
-              phone: data.phone,
-              pets: data.petId,
-              petsitter: data.petsitterId,
-              client: ctx.state.user.id,
-              progress: "RESERVATION_REQUEST",
-            },
-          }
-        );
-
-        return (ctx.body = "Create Reservation Success");
-      } catch (e) {
-        console.error(e);
-        return ctx.badRequest("Reservation 생성 실패");
-      }
-    },
-
-    async find(ctx) {
-      // 멤버, 펫시터 예약 조회
-      const { id: userId } = ctx.state.user;
-      const { type } = ctx.state.user.role;
-
-      if (ctx.request.query.condition === "expected") {
-        // 예약 상태 조회 "expected" 일 때
-        let filters = {};
-        if (type === "public") {
-          filters.client = { id: { $eq: userId } };
-          filters.progress = {
-            $in: ["RESERVATION_REQUEST", "RESERVATION_CONFIRMED"],
-          };
-        } else if (type === "petsitter") {
-          filters.petsitter = { id: { $eq: userId } };
-          filters.progress = {
-            $in: ["RESERVATION_REQUEST", "RESERVATION_CONFIRMED"],
-          };
-        }
-
-        try {
-          const reservations = await strapi.entityService.findMany(
-            "api::reservation.reservation",
-            {
-              sort: { id: "desc" },
-              filters,
-              populate: {
-                pets: true,
-                petsitter: {
-                  populate: { role: true, photo: true },
-                },
-              },
-              start:
-                (+ctx.request.query.page - 1) * +ctx.request.query.size || 0,
-              limit: +ctx.request.query.page * +ctx.request.query.size || 0,
-            }
-          );
-          // ctx.send(reservations);
-
-          const modifiedReservations = reservations.map((reservations) => ({
-            reservationId: reservations.id,
-            reservationDay: reservations.reservationDate,
-            reservationTimeStart: reservations.reservationTimeStart,
-            reservationTimeEnd: reservations.reservationTimeEnd,
-            address: reservations.address,
-            reservationPhone: reservations.phone,
-            reservationBody: reservations.reservationBody,
-            progress: reservations.progress,
-            petsitterId: reservations.petsitter.role.id,
-            petsitterName: reservations.petsitter.username,
-            petsitterNickName: reservations.petsitter.nickName,
-            petsitterPhone: reservations.petsitter.phone,
-            // reservations.petsitter.photo가 null일 경우, formats 속성에 접근하면 에러발생나는 것 방지
-            petsitterPhoto:
-              reservations.petsitter &&
-              reservations.petsitter.photo &&
-              reservations.petsitter.photo.formats &&
-              reservations.petsitter.photo.formats.thumbnail
-                ? reservations.petsitter.photo.formats.thumbnail.url
-                : null,
-            pets: reservations.pets
-              ? reservations.pets.map((pets) => ({
-                  petId: pets.id,
-                  name: pets.name,
-                }))
-              : null,
-            journalId: reservations.journalId ? reservations.journalId : null,
-          }));
-
-          console.log(modifiedReservations);
-          ctx.send(modifiedReservations);
-        } catch (e) {
-          console.log(e);
-        }
-      } else if (ctx.request.query.condition === "finish") {
-        // 예약 상태 조회 "finish" 일 때
-        let filters = {};
-        if (type === "public") {
-          filters.client = { id: { $eq: userId } };
-          filters.progress = {
-            $in: ["RESERVATION_CANCELLED", "FINISH_CARING"],
-          };
-        } else if (type === "petsitter") {
-          filters.petsitter = { id: { $eq: userId } };
-          filters.progress = {
-            $in: ["RESERVATION_CANCELLED", "FINISH_CARING"],
-          };
-        }
-
-        try {
-          const reservations = await strapi.entityService.findMany(
-            "api::reservation.reservation",
-            {
-              sort: { id: "desc" },
-              filters,
-              populate: {
-                pets: true,
-                client: {
-                  populate: { role: true, photo: true },
-                },
-              },
-              start:
-                (+ctx.request.query.page - 1) * +ctx.request.query.size || 0,
-              limit: +ctx.request.query.page * +ctx.request.query.size || 0,
-            }
-          );
-          // ctx.send(reservations);
-
-          const modifiedReservations = reservations.map((reservations) => ({
-            reservationId: reservations.id,
-            reservationDay: reservations.reservationDate,
-            reservationTimeStart: reservations.reservationTimeStart,
-            reservationTimeEnd: reservations.reservationTimeEnd,
-            address: reservations.address,
-            reservationPhone: reservations.phone,
-            reservationBody: reservations.reservationBody,
-            progress: reservations.progress,
-            memberId: reservations.client.role.id,
-            memberName: reservations.client.username,
-            memberNickName: reservations.client.nickName,
-            memberPhone: reservations.client.phone,
-            // reservations.client.photo가 null일 경우, formats 속성에 접근하면 에러발생나는 것 방지
-            memberPhoto:
-              reservations.client &&
-              reservations.client.photo &&
-              reservations.client.photo.formats &&
-              reservations.client.photo.formats.thumbnail
-                ? reservations.client.photo.formats.thumbnail.url
-                : null,
-            pets: reservations.pets
-              ? reservations.pets.map((pets) => ({
-                  petId: pets.id,
-                  name: pets.name,
-                }))
-              : null,
-            journalId: reservations.journalId ? reservations.journalId : null,
-          }));
-
-          console.log(modifiedReservations);
-          ctx.send(modifiedReservations);
-        } catch (e) {
-          console.log(e);
-        }
-      } else {
-        let filters = {};
-        if (type === "public") {
-          filters.client = { id: { $eq: userId } };
-        } else if (type === "petsitter") {
-          filters.petsitter = { id: { $eq: userId } };
-        }
-        try {
-          const reservations = await strapi.entityService.findMany(
-            "api::reservation.reservation",
-            {
-              sort: { id: "desc" },
-              filters,
-              start:
-                (+ctx.request.query.page - 1) * +ctx.request.query.size || 0,
-              limit: +ctx.request.query.page * +ctx.request.query.size || 0,
-            }
-          );
-          ctx.send(reservations);
-        } catch (e) {
-          console.log(e);
-        }
-      }
-    },
-
+    // 예약정보에 맞는 펫시터 조회
     async findPossiblePetsitter(ctx) {
-      // 예약정보에 맞는 펫시터 조회
-      const {
-        reservationDate,
-        reservationTimeStart,
-        reservationTimeEnd,
-        address,
-        petId,
-      } = ctx.request.body;
+      if (!ctx.state.user) {
+        ctx.badRequest("권한이 없습니다.");
+      } else if (ctx.state.user.role.type === "public") {
+        const {
+          reservationDate,
+          reservationTimeStart,
+          reservationTimeEnd,
+          address,
+          petId,
+        } = ctx.request.body;
 
-      // petsitter검색
-      try {
-        const pets = await strapi.entityService.findMany("api::pet.pet", {
-          filters: {
-            id: petId,
-          },
-        });
-
-        const petsitters = await strapi.entityService.findMany(
-          "plugin::users-permissions.user",
-          {
+        // petsitter검색
+        try {
+          const pets = await strapi.entityService.findMany("api::pet.pet", {
             filters: {
-              possibleDay: {
-                $contains: new Date(reservationDate).toLocaleDateString(
-                  "ko-KR",
-                  {
-                    weekday: "short",
-                  }
-                ),
-              },
-              possibleTimeStart: {
-                $lte: reservationTimeStart,
-              },
-              possibleTimeEnd: {
-                $gte: reservationTimeEnd,
-              },
-              possibleLocation: {
-                $contains: address.split(" ").slice(1, 3).join(" "),
-              },
-              possiblePetType: {
-                $contains: pets.map((pet) => pet.type),
-              },
+              id: petId,
             },
-            populate: { photo: { fields: ["url"] } },
-          }
-        );
+          });
 
-        const possiblePetsittersId = petsitters.map(
-          (petsitter) => petsitter.id
-        );
-        console.log(possiblePetsittersId);
-
-        const reviews = await strapi.entityService.findMany(
-          "api::review.review",
-          {
-            populate: {
-              reservation: {
-                populate: {
-                  petsitter: { filters: { id: possiblePetsittersId } },
+          const petsitters = await strapi.entityService.findMany(
+            "plugin::users-permissions.user",
+            {
+              filters: {
+                possibleDay: {
+                  $contains: new Date(reservationDate).toLocaleDateString(
+                    "ko-KR",
+                    { weekday: "short" }
+                  ),
+                },
+                possibleTimeStart: {
+                  $lte: reservationTimeStart,
+                },
+                possibleTimeEnd: { $gte: reservationTimeEnd },
+                possibleLocation: {
+                  $contains: address.split(" ").slice(1, 3).join(" "),
+                },
+                possiblePetType: {
+                  $contains: pets.map((pet) => pet.type),
                 },
               },
-            },
-          }
-        );
-        console.log(reviews);
+              populate: {
+                reservations_petsitter: {
+                  populate: { review: { fields: ["star"] } },
+                },
+                photo: true,
+              },
+            }
+          );
 
-        // console.log(petsitters);
-        const possiblePetsitters = petsitters.map((petsitter) => ({
-          petsitterId: petsitter.id,
-          name: petsitter.username,
-          nickName: petsitter.nickName,
-          photo: petsitter.photo ? petsitter.photo.url : null,
-          possibleDay: petsitter.possibleDay ? petsitter.possibleDay : null,
-          possibleTimeStart: petsitter.possibleTimeStart,
-          possibleTimeEnd: petsitter.possibleTimeEnd,
-          star: petsitter.star ? petsitter.star : null,
-          reviewCount: petsitter.reviewCount ? petsitter.reviewCount : null,
-        }));
+          const modifiedPetsitter = petsitters.map((petsitter) => ({
+            petsitterId: petsitter.id,
+            name: petsitter.username,
+            nickName: petsitter.nickName,
+            photo: petsitter.photo && petsitter.photo.formats.thumbnail.url,
+            possibleDay: petsitter.possibleDay,
+            possibleTimeStart: petsitter.possibleTimeStart,
+            possibleTimeEnd: petsitter.possibleTimeEnd,
+            star:
+              Math.ceil(
+                (petsitter.reservations_petsitter
+                  .map(
+                    (reservation) =>
+                      reservation.review && reservation.review.star
+                  )
+                  .reduce((acc, cur) => acc + cur, 0) /
+                  petsitter.reservations_petsitter
+                    .map((reservation) => reservation.review)
+                    .filter((review) => review).length) *
+                  10
+              ) / 10,
+            reviewCount: petsitter.reservations_petsitter.map(
+              (reservation) => reservation.review
+            ).length,
+          }));
 
-        // ctx.send(possiblePetsitters);
-      } catch (e) {
-        console.error("해당 예약에 맞는 펫시터를 찾을 수 없습니다.");
+          ctx.send(modifiedPetsitter);
+        } catch (e) {
+          console.log(e);
+        }
       }
     },
 
-    // 펫시터 예약일정 조회
+    // 펫시터 예약일정 조회 v
     async sitterSchedule(ctx) {
-      const { id: petsitterId } = ctx.params;
+      const { petsitterId } = ctx.params;
 
-      console.log(petsitterId);
-      try {
-        const reservations = await strapi.entityService.findMany(
-          "api::reservation.reservation",
-          {
-            filters: {
-              petsitter: { id: { $eq: petsitterId } },
-              reservationDate: {
-                $gte: new Date().toISOString().substring(0, 10),
+      if (!ctx.state.user) {
+        return ctx.badRequest("권한이 없습니다.");
+      } else if (ctx.state.user.id === +petsitterId) {
+        try {
+          const reservations = await strapi.entityService.findMany(
+            "api::reservation.reservation",
+            {
+              sort: { reservationDate: "asc" },
+              filters: {
+                petsitter: { id: { $eq: petsitterId } },
+                reservationDate: {
+                  $gte: new Date().toISOString().substring(0, 10),
+                },
+                progress: {
+                  $notIn: ["RESERVATION_CANCELLED", "FINISH_CARING"],
+                },
               },
-              progress: {
-                $notIn: ["RESERVATION_CANCELLED", "FINISH_CARING"],
-              },
-            },
-          }
-        );
+              start:
+                (+ctx.request.query.page - 1) * +ctx.request.query.size || 0,
+              limit: +ctx.request.query.page * +ctx.request.query.size || 0,
+            }
+          );
 
-        console.log(reservations);
+          const transformedReservations = reservations.map((reservation) => ({
+            reservationId: reservation.id,
+            reservationDate: reservation.reservationDate,
+            reservationTimeStart: reservation.reservationTimeStart,
+            reservationTimeEnd: reservation.reservationTimeEnd,
+            progress: reservation.progress,
+          }));
 
-        const transformedReservations = reservations.map((reservation) => ({
-          reservationId: reservation.id,
-          reservationDate: reservation.reservationDate,
-          reservationTimeStart: reservation.reservationTimeStart,
-          reservationTimeEnd: reservation.reservationTimeEnd,
-          progress: reservation.progress,
-        }));
-
-        console.log(transformedReservations);
-        ctx.send(transformedReservations);
-      } catch (error) {
-        console.error(error);
+          ctx.send(transformedReservations);
+        } catch (error) {
+          console.error(error);
+        }
       }
     },
   })

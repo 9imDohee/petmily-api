@@ -67,11 +67,9 @@
     },
     "nickName": {
       "type": "string",
-      "required": true
-    },
-    "phone": {
-      "type": "biginteger",
-      "required": true
+      "required": true,
+      "minLength": 2,
+      "maxLength": 10
     },
     "address": {
       "type": "text",
@@ -95,21 +93,13 @@
       "target": "api::reservation.reservation",
       "mappedBy": "client"
     },
-    "reservation_petsitter": {
-      "type": "relation",
-      "relation": "oneToMany",
-      "target": "api::reservation.reservation",
-      "mappedBy": "petsitter"
-    },
     "body": {
-      "type": "text"
-    },
-    "reviewCount": {
-      "type": "integer",
-      "min": 0
+      "type": "text",
+      "maxLength": 255
     },
     "possibleDay": {
-      "type": "string"
+      "type": "string",
+      "maxLength": 5
     },
     "possibleTimeStart": {
       "type": "time"
@@ -135,6 +125,16 @@
       "relation": "manyToOne",
       "target": "plugin::users-permissions.user",
       "inversedBy": "likes"
+    },
+    "reservations_petsitter": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "api::reservation.reservation",
+      "mappedBy": "petsitter"
+    },
+    "phone": {
+      "type": "string",
+      "required": true
     }
   }
 }
